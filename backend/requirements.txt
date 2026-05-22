@@ -1,0 +1,10 @@
+flask
+flask-cors
+flask-sqlalchemy
+flask-jwt-extended
+flask-socketio
+eventlet
+python-dotenv
+bcrypt
+psycopg2-binary
+werkzeug

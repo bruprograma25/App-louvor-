@@ -13,6 +13,8 @@ class Song(db.Model):
     bpm = db.Column(db.Integer)
     spotify_url = db.Column(db.String(500))
     youtube_url = db.Column(db.String(500))
+    cifra_url = db.Column(db.String(500))
+    audio_url = db.Column(db.String(500))
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
     def to_dict(self):
@@ -24,6 +26,8 @@ class Song(db.Model):
             "key": self.key,
             "bpm": self.bpm,
             "spotify_url": self.spotify_url,
+            "cifra_url": self.cifra_url,
+            "audio_url": self.audio_url,
             "youtube_url": self.youtube_url,
             "created_at": self.created_at.isoformat() if self.created_at else None
         }

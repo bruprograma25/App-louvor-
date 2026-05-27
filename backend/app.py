@@ -50,6 +50,15 @@ def create_app():
     app.register_blueprint(upload_bp)
     app.register_blueprint(user_bp)
     app.register_blueprint(setlist_bp)
+    try:
+        from backend.routes.google_calendar import calendar_bp
+        app.register_blueprint(calendar_bp)
+    except Exception:
+        try:
+            from routes.google_calendar import calendar_bp
+            app.register_blueprint(calendar_bp)
+        except Exception:
+            pass
 
     @app.route("/")
     def home():
@@ -70,11 +79,17 @@ def create_app():
                 db.session.execute(text("ALTER TABLE song ADD COLUMN spotify_url TEXT"))
             if "youtube_url" not in existing_columns:
                 db.session.execute(text("ALTER TABLE song ADD COLUMN youtube_url TEXT"))
+            if "cifra_url" not in existing_columns:
+                db.session.execute(text("ALTER TABLE song ADD COLUMN cifra_url TEXT"))
+            if "audio_url" not in existing_columns:
+                db.session.execute(text("ALTER TABLE song ADD COLUMN audio_url TEXT"))
             # ensure ministration has attachment column
             result_min = db.session.execute(text("PRAGMA table_info('ministration')")).all()
             existing_min_cols = {row[1] for row in result_min}
             if "attachment_url" not in existing_min_cols:
                 db.session.execute(text("ALTER TABLE ministration ADD COLUMN attachment_url TEXT"))
+            if "notified" not in existing_min_cols:
+                db.session.execute(text("ALTER TABLE ministration ADD COLUMN notified BOOLEAN"))
             result_user = db.session.execute(text("PRAGMA table_info('user')")).all()
             existing_user_cols = {row[1] for row in result_user}
             if "status" not in existing_user_cols:
@@ -91,4 +106,4 @@ socketio = SocketIO(app, cors_allowed_origins="*", async_mode="threading")
 register_socket_events(socketio)
 
 if __name__ == "__main__":
-    socketio.run(app, host="0.0.0.0", port=5000, debug=True)
+    socketio.run(app, host="0.0.0.0", port=5000, debug=True, allow_unsafe_werkzeug=True)

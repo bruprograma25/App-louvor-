@@ -25,6 +25,8 @@ def create_song():
     song.key = data.get("key")
     song.bpm = data.get("bpm")
     song.spotify_url = data.get("spotify_url")
+    song.cifra_url = data.get("cifra_url")
+    song.audio_url = data.get("audio_url")
     song.youtube_url = data.get("youtube_url")
 
     db.session.add(song)
@@ -43,6 +45,8 @@ def update_song(song_id):
     song.key = data.get("key", song.key)
     song.bpm = data.get("bpm", song.bpm)
     song.spotify_url = data.get("spotify_url", song.spotify_url)
+    song.cifra_url = data.get("cifra_url", song.cifra_url)
+    song.audio_url = data.get("audio_url", song.audio_url)
     song.youtube_url = data.get("youtube_url", song.youtube_url)
 
     db.session.commit()

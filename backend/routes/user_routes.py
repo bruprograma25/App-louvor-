@@ -75,3 +75,21 @@ def patch_user(user_id):
 
     db.session.commit()
     return jsonify(user.to_dict())
+
+
+@user_bp.route("/api/users/<int:user_id>/mark_beginner", methods=["POST"])
+def mark_beginner(user_id):
+    """Marca ou desmarca um usuário como iniciante via campo `status` = 'iniciante'"""
+    user = User.query.get_or_404(user_id)
+    data = request.json or {}
+    make_beginner = data.get('beginner')
+    if make_beginner is None:
+        return jsonify({"error": "Campo 'beginner' é obrigatório (true/false)"}), 400
+
+    if make_beginner:
+        user.status = 'iniciante'
+    else:
+        user.status = data.get('status', 'Apto')
+
+    db.session.commit()
+    return jsonify(user.to_dict())

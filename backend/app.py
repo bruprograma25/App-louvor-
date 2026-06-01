@@ -1,37 +1,30 @@
 ﻿import os
+from dotenv import load_dotenv
+load_dotenv()
+
 from flask import Flask, jsonify, send_from_directory
 from flask_cors import CORS
 from flask_jwt_extended import JWTManager
 from flask_socketio import SocketIO
 from sqlalchemy import text
 
-try:
-    from backend.database.db import db
-    from backend.routes.song_routes import song_bp
-    from backend.routes.dashboard_routes import dashboard_bp
-    from backend.routes.ministration_routes import ministration_bp
-    from backend.routes.auth_routes import auth_bp
-    from backend.routes.notification_routes import notification_bp
-    from backend.routes.upload_routes import upload_bp
-    from backend.routes.user_routes import user_bp
-    from backend.routes.setlist_routes import setlist_bp
-    from backend.sockets.socket_events import register_socket_events
-except ImportError:
-    from database.db import db
-    from routes.song_routes import song_bp
-    from routes.dashboard_routes import dashboard_bp
-    from routes.ministration_routes import ministration_bp
-    from routes.auth_routes import auth_bp
-    from routes.notification_routes import notification_bp
-    from routes.upload_routes import upload_bp
-    from routes.user_routes import user_bp
-    from routes.setlist_routes import setlist_bp
-    from sockets.socket_events import register_socket_events
+# Sistema de importação robusto para evitar "ModuleNotFoundError"
+from database.db import db
+from routes.song_routes import song_bp
+from routes.dashboard_routes import dashboard_bp
+from routes.ministration_routes import ministration_bp
+from routes.auth_routes import auth_bp
+from routes.notification_routes import notification_bp
+from routes.upload_routes import upload_bp
+from routes.user_routes import user_bp
+from routes.setlist_routes import setlist_bp
+from routes.integrations_routes import integrations_bp
+from sockets.socket_events import register_socket_events
 
 
 def create_app():
     app = Flask(__name__)
-    app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get("DATABASE_URI", "sqlite:///louvor.db")
+    app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get("DATABASE_URL", "sqlite:///app.db")
     app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
     app.config["JWT_SECRET_KEY"] = os.environ.get("JWT_SECRET_KEY", "change-this-secret")
     app.config["UPLOAD_FOLDER"] = os.path.join(os.getcwd(), "uploads")
@@ -50,6 +43,7 @@ def create_app():
     app.register_blueprint(upload_bp)
     app.register_blueprint(user_bp)
     app.register_blueprint(setlist_bp)
+    app.register_blueprint(integrations_bp)
     try:
         from backend.routes.google_calendar import calendar_bp
         app.register_blueprint(calendar_bp)
@@ -90,6 +84,13 @@ def create_app():
                 db.session.execute(text("ALTER TABLE ministration ADD COLUMN attachment_url TEXT"))
             if "notified" not in existing_min_cols:
                 db.session.execute(text("ALTER TABLE ministration ADD COLUMN notified BOOLEAN"))
+            
+            # Força a criação dos campos que você pediu na aba de ministração
+            columns_to_add = ["minister", "cult_type", "status", "playlist_url", "whatsapp_url"]
+            for col in columns_to_add:
+                if col not in existing_min_cols:
+                    db.session.execute(text(f"ALTER TABLE ministration ADD COLUMN {col} TEXT"))
+            
             result_user = db.session.execute(text("PRAGMA table_info('user')")).all()
             existing_user_cols = {row[1] for row in result_user}
             if "status" not in existing_user_cols:

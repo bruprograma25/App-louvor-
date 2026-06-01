@@ -28,10 +28,11 @@ def register():
 
     password = bcrypt.hashpw(password_text.encode(), bcrypt.gensalt())
 
-    user = User()
-    user.full_name = full_name
-    user.email = email
-    user.password = password.decode()
+    user = User(
+        full_name=full_name,
+        email=email,
+        password=password.decode()
+    )
 
     db.session.add(user)
     db.session.commit()

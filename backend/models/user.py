@@ -19,6 +19,11 @@ class User(db.Model):
 
     image = db.Column(db.String(500))
 
+    # New fields for members
+    voice = db.Column(db.String(100))  # e.g., Mezzo-soprano, Tenor, Guitarra
+    birth_date = db.Column(db.String(50))  # e.g., 20/05/1990
+    notes = db.Column(db.Text)  # Observações
+
     def to_dict(self):
 
         return {
@@ -27,5 +32,8 @@ class User(db.Model):
             "email": self.email,
             "role": self.role,
             "status": self.status,
-            "image": self.image
+            "image": self.image,
+            "voice": self.voice,
+            "birth_date": self.birth_date,
+            "notes": self.notes
         }

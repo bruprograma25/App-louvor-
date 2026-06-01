@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import api from "../api/api";
 import SongCard from "../components/SongCard";
+import SpotifySearch from "../components/SpotifySearch";
 import { Search, Plus, Music2 } from "lucide-react";
 
 export default function Songs() {
@@ -26,6 +27,12 @@ export default function Songs() {
     } catch (error) {
       console.error(error);
     }
+  }
+
+  function handleSelectSpotifyTrack(track) {
+    setTitle(track.name);
+    setArtist(track.artist);
+    setSpotifyUrl(track.url);
   }
 
   async function handleCreateSong() {
@@ -133,52 +140,60 @@ export default function Songs() {
           ))}
         </div>
 
-        <div className="mt-8 grid gap-4 xl:grid-cols-2">
-          <input
-            value={title}
-            onChange={(event) => setTitle(event.target.value)}
-            placeholder="Título da música"
-            className="w-full rounded-3xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none focus:border-rose-500"
-          />
-          <input
-            value={artist}
-            onChange={(event) => setArtist(event.target.value)}
-            placeholder="Artista"
-            className="w-full rounded-3xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none focus:border-rose-500"
-          />
-          <input
-            value={leader}
-            onChange={(event) => setLeader(event.target.value)}
-            placeholder="Líder"
-            className="w-full rounded-3xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none focus:border-rose-500"
-          />
-          <div className="grid gap-4 sm:grid-cols-2">
+        <div className="mt-8 space-y-4">
+          {/* Spotify Search Component */}
+          <div className="rounded-2xl border border-green-200 bg-green-50 p-4">
+            <SpotifySearch onSelectTrack={handleSelectSpotifyTrack} />
+          </div>
+
+          {/* Form Fields */}
+          <div className="grid gap-4 xl:grid-cols-2">
             <input
-              value={key}
-              onChange={(event) => setKey(event.target.value)}
-              placeholder="Tom"
+              value={title}
+              onChange={(event) => setTitle(event.target.value)}
+              placeholder="Título da música"
               className="w-full rounded-3xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none focus:border-rose-500"
             />
             <input
-              value={bpm}
-              onChange={(event) => setBpm(event.target.value)}
-              placeholder="BPM"
-              type="number"
+              value={artist}
+              onChange={(event) => setArtist(event.target.value)}
+              placeholder="Artista"
+              className="w-full rounded-3xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none focus:border-rose-500"
+            />
+            <input
+              value={leader}
+              onChange={(event) => setLeader(event.target.value)}
+              placeholder="Líder"
+              className="w-full rounded-3xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none focus:border-rose-500"
+            />
+            <div className="grid gap-4 sm:grid-cols-2">
+              <input
+                value={key}
+                onChange={(event) => setKey(event.target.value)}
+                placeholder="Tom"
+                className="w-full rounded-3xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none focus:border-rose-500"
+              />
+              <input
+                value={bpm}
+                onChange={(event) => setBpm(event.target.value)}
+                placeholder="BPM"
+                type="number"
+                className="w-full rounded-3xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none focus:border-rose-500"
+              />
+            </div>
+            <input
+              value={spotifyUrl}
+              onChange={(event) => setSpotifyUrl(event.target.value)}
+              placeholder="Link Spotify"
+              className="w-full rounded-3xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none focus:border-rose-500"
+            />
+            <input
+              value={youtubeUrl}
+              onChange={(event) => setYoutubeUrl(event.target.value)}
+              placeholder="Link YouTube"
               className="w-full rounded-3xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none focus:border-rose-500"
             />
           </div>
-          <input
-            value={spotifyUrl}
-            onChange={(event) => setSpotifyUrl(event.target.value)}
-            placeholder="Link Spotify"
-            className="w-full rounded-3xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none focus:border-rose-500"
-          />
-          <input
-            value={youtubeUrl}
-            onChange={(event) => setYoutubeUrl(event.target.value)}
-            placeholder="Link YouTube"
-            className="w-full rounded-3xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none focus:border-rose-500"
-          />
         </div>
       </div>
 

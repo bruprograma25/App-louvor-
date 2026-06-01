@@ -1,6 +1,6 @@
 ﻿import { useEffect, useRef, useState } from "react";
 import { read, utils } from "xlsx";
-import { Upload, Trash2 } from "lucide-react";
+import { Upload, Trash2, Calendar, Search, Filter, CheckCircle2, Clock, AlertCircle, ArrowRight } from "lucide-react";
 
 function parseCSV(csvText) {
   const lines = csvText
@@ -88,14 +88,17 @@ const DEFAULT_PROCESSES = [
 
 function groupByMonth(processes) {
   return processes.reduce((grouped, process) => {
-    grouped[process.month] = grouped[process.month] || [];
-    grouped[process.month].push(process);
+    const m = process.month || "Geral";
+    grouped[m] = grouped[m] || [];
+    grouped[m].push(process);
     return grouped;
   }, {});
 }
 
 export default function Processes() {
   const [processes, setProcesses] = useState([]);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [filterStatus, setFilterStatus] = useState("Todos");
   const [message, setMessage] = useState("");
   const importInputRef = useRef(null);
 
@@ -161,9 +164,11 @@ export default function Processes() {
   }
 
   function handleAddProcess() {
+    const now = new Date();
+    const months = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
     const newProcess = {
-      month: "Novo",
-      date: "Data a definir",
+      month: months[now.getMonth()],
+      date: now.toLocaleDateString('pt-BR'),
       title: "Novo processo",
       status: "Pendente",
     };
@@ -178,89 +183,110 @@ export default function Processes() {
     setProcesses((current) => current.filter((_, idx) => idx !== index));
   }
 
-  const groupedProcesses = groupByMonth(processes);
+  const filteredProcesses = processes.filter(p => {
+    const matchesSearch = p.title.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesFilter = filterStatus === "Todos" || p.status === filterStatus;
+    return matchesSearch && matchesFilter;
+  });
+
+  const groupedProcesses = groupByMonth(filteredProcesses);
+
+  const getStatusStyles = (status) => {
+    switch(status) {
+      case "Concluído": return "bg-emerald-50 text-emerald-700 border-emerald-200";
+      case "Em andamento": return "bg-sky-50 text-sky-700 border-sky-200";
+      case "Adiado": return "bg-rose-50 text-rose-700 border-rose-200";
+      default: return "bg-amber-50 text-amber-700 border-amber-200";
+    }
+  };
 
   return (
-    <div className="space-y-8 p-10">
-      <div className="rounded-[34px] border border-slate-200 bg-white p-8 shadow-sm">
-        <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+    <div className="min-h-screen bg-[#F8FAFC] p-4 md:p-10 space-y-8">
+      {/* Header Estilo Calendário */}
+      <div className="bg-white rounded-[32px] p-8 shadow-sm border border-slate-100 relative overflow-hidden">
+        <div className="absolute top-0 right-0 p-12 opacity-5">
+          <Calendar size={120} />
+        </div>
+        <div className="relative z-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
           <div>
-            <h1 className="text-3xl font-semibold text-slate-900">Agenda de Processos</h1>
-            <p className="mt-2 text-sm text-slate-500">Mapeamento e agenda geral do Ministério de Louvor</p>
+            <h1 className="text-4xl font-bold text-slate-900 tracking-tight">Agenda de Processos</h1>
+            <p className="text-slate-500 mt-2 flex items-center gap-2">
+              <Calendar className="h-4 w-4" /> Planejamento Anual do Ministério de Louvor
+            </p>
           </div>
-          <div className="flex flex-wrap items-center gap-3">
-            <button
-              type="button"
-              onClick={handleImportClick}
-              className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-100"
-            >
-              <Upload className="h-4 w-4" />
-              Importar Planilha
+          <div className="flex gap-3">
+            <button onClick={handleImportClick} className="flex items-center gap-2 px-6 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-2xl font-semibold transition-all">
+              <Upload className="h-5 w-5" /> Importar
             </button>
-            <button
-              type="button"
-              onClick={handleAddProcess}
-              className="inline-flex items-center gap-2 rounded-full bg-rose-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-rose-700"
-            >
-              + Adicionar
+            <button onClick={handleAddProcess} className="flex items-center gap-2 px-6 py-3 bg-rose-600 hover:bg-rose-700 text-white rounded-2xl font-semibold shadow-lg shadow-rose-200 transition-all">
+              + Novo Evento
             </button>
+          </div>
+        </div>
+
+        {/* Filtros e Busca */}
+        <div className="mt-10 flex flex-col md:flex-row gap-4">
+          <div className="relative flex-1">
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400" />
+            <input 
+              type="text" 
+              placeholder="Buscar por título do processo..." 
+              className="w-full pl-12 pr-4 py-4 bg-slate-50 border-none rounded-2xl focus:ring-2 focus:ring-rose-500 transition-all"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+          </div>
+          <div className="flex items-center gap-2 bg-slate-50 px-4 py-2 rounded-2xl">
+            <Filter className="h-5 w-5 text-slate-400" />
+            <select 
+              className="bg-transparent border-none focus:ring-0 font-medium text-slate-600"
+              value={filterStatus}
+              onChange={(e) => setFilterStatus(e.target.value)}
+            >
+              <option value="Todos">Todos os Status</option>
+              {STATUS_OPTIONS.map(opt => <option key={opt} value={opt}>{opt}</option>)}
+            </select>
           </div>
         </div>
       </div>
 
       <input ref={importInputRef} type="file" accept=".csv,.xlsx,.xlsm" onChange={handleImportChange} className="hidden" />
 
-      {message && (
-        <div className="rounded-[28px] border border-rose-200 bg-rose-50 px-6 py-4 text-sm text-rose-700">
-          {message}
-        </div>
-      )}
-
-      <div className="space-y-6">
+      {/* Visualização Estilo Grade de Calendário (Dashboard) */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {Object.entries(groupedProcesses).map(([month, items]) => (
-          <div key={month} className="rounded-[32px] border border-slate-200 bg-slate-50 p-6 shadow-sm">
-            <div className="rounded-[24px] bg-rose-50 px-4 py-3 text-sm font-semibold uppercase tracking-[.15em] text-rose-700">
-              {month}
+          <div key={month} className="bg-white rounded-[32px] p-6 shadow-sm border border-slate-100 flex flex-col hover:shadow-md transition-shadow">
+            <div className="flex items-center justify-between mb-6">
+              <div className="flex items-center gap-3">
+                <div className="h-10 w-10 bg-rose-50 rounded-2xl flex items-center justify-center text-rose-600">
+                  <Calendar className="h-6 w-6" />
+                </div>
+                <h2 className="text-xl font-bold text-slate-900">{month}</h2>
+              </div>
+              <span className="bg-rose-50 text-rose-600 text-xs font-bold px-3 py-1 rounded-full">{items.length} Eventos</span>
             </div>
-            <div className="mt-4 space-y-4">
-              {items.map((process, index) => (
-                <div key={`${month}-${index}`} className="rounded-[24px] border border-slate-200 bg-white p-4 shadow-sm">
-                  <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                    <div className="min-w-[136px] text-sm font-semibold text-slate-500">{process.date}</div>
-                    <div className="flex-1 text-sm font-semibold text-slate-900">{process.title}</div>
-                    <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
-                      <span
-                        className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold ${
-                          process.status === "Concluído"
-                            ? "bg-emerald-100 text-emerald-700"
-                            : process.status === "Adiado"
-                            ? "bg-rose-100 text-rose-700"
-                            : process.status === "Em andamento"
-                            ? "bg-sky-100 text-sky-700"
-                            : "bg-amber-100 text-amber-700"
-                        }`}
-                      >
-                        {process.status}
-                      </span>
-                      <select
-                        value={process.status}
-                        onChange={(event) => handleStatusChange(processes.indexOf(process), event.target.value)}
-                        className="rounded-full border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 outline-none"
-                      >
-                        {STATUS_OPTIONS.map((status) => (
-                          <option key={status} value={status}>
-                            {status}
-                          </option>
-                        ))}
-                      </select>
-                      <button
-                        type="button"
-                        onClick={() => handleDeleteProcess(processes.indexOf(process))}
-                        className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-500 hover:border-rose-300 hover:text-rose-600"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </button>
-                    </div>
+            
+            <div className="space-y-3 flex-1">
+              {items.map((process, idx) => (
+                <div key={idx} className={`p-4 rounded-2xl border transition-all flex flex-col gap-2 ${getStatusStyles(process.status)} border-opacity-30`}>
+                  <div className="flex justify-between items-start gap-2">
+                    <h3 className="font-bold text-sm leading-tight flex-1">{process.title}</h3>
+                    <button 
+                      onClick={() => handleDeleteProcess(processes.indexOf(process))}
+                      className="text-slate-400 hover:text-rose-600 transition-colors"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </button>
+                  </div>
+                  <div className="flex justify-between items-center mt-2">
+                    <span className="text-[10px] font-bold opacity-70 uppercase">{process.date}</span>
+                    <select 
+                      value={process.status}
+                      onChange={(e) => handleStatusChange(processes.indexOf(process), e.target.value)}
+                      className="bg-white bg-opacity-50 border-none text-[10px] font-bold rounded-lg py-1 px-2 focus:ring-0 cursor-pointer"
+                    >
+                      {STATUS_OPTIONS.map(opt => <option key={opt} value={opt}>{opt}</option>)}
+                    </select>
                   </div>
                 </div>
               ))}

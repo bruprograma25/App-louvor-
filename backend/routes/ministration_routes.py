@@ -1,47 +1,49 @@
 ﻿from flask import Blueprint, jsonify, request
+import os
+import smtplib
+from email.message import EmailMessage
 
 try:
     from backend.database.db import db
     from backend.models.ministration import Ministration
+    from backend.models.confirmation import Confirmation
+    from backend.models.user import User
+    from backend.models.song import Song
 except ImportError:
     from database.db import db
     from models.ministration import Ministration
     from models.confirmation import Confirmation
     from models.user import User
-    import os
-    import smtplib
-    from email.message import EmailMessage
+    from models.song import Song
 
+def send_email(to_email, subject, body):
+    host = os.environ.get('MAIL_HOST')
+    port = int(os.environ.get('MAIL_PORT', '587'))
+    user = os.environ.get('MAIL_USER')
+    password = os.environ.get('MAIL_PASS')
+    sender = os.environ.get('MAIL_FROM', user)
 
-    def send_email(to_email, subject, body):
-        host = os.environ.get('MAIL_HOST')
-        port = int(os.environ.get('MAIL_PORT', '587'))
-        user = os.environ.get('MAIL_USER')
-        password = os.environ.get('MAIL_PASS')
-        sender = os.environ.get('MAIL_FROM', user)
+    if not host or not user or not password:
+        print('Email not sent (SMTP not configured). To:', to_email, 'Subject:', subject)
+        print('Body:', body)
+        return False
 
-        if not host or not user or not password:
-            # fallback to console logging
-            print('Email not sent (SMTP not configured). To:', to_email, 'Subject:', subject)
-            print('Body:', body)
-            return False
+    try:
+        msg = EmailMessage()
+        msg['Subject'] = subject
+        msg['From'] = sender
+        msg['To'] = to_email
+        msg.set_content(body)
 
-        try:
-            msg = EmailMessage()
-            msg['Subject'] = subject
-            msg['From'] = sender
-            msg['To'] = to_email
-            msg.set_content(body)
+        with smtplib.SMTP(host, port) as server:
+            server.starttls()
+            server.login(user, password)
+            server.send_message(msg)
 
-            with smtplib.SMTP(host, port) as server:
-                server.starttls()
-                server.login(user, password)
-                server.send_message(msg)
-
-            return True
-        except Exception as e:
-            print('Failed to send email', e)
-            return False
+        return True
+    except Exception as e:
+        print('Failed to send email', e)
+        return False
 
 ministration_bp = Blueprint("ministrations", __name__)
 
@@ -120,7 +122,10 @@ def confirm_ministration(ministration_id):
     elif email:
         user = User.query.filter_by(email=email).first()
 
-    confirmation = Confirmation(ministration_id=ministration.id, user_id=user.id if user else None, email=email or (user.email if user else None))
+    confirmation = Confirmation(
+        ministration_id=ministration.id, 
+        user_id=user.id if user else (int(user_id) if user_id and str(user_id).isdigit() else None), 
+        email=email or (user.email if user else None))
     db.session.add(confirmation)
     db.session.commit()
 
@@ -135,7 +140,6 @@ def add_song_to_ministration(ministration_id):
     if not song_id:
         return jsonify({"error": "song_id é obrigatório"}), 400
 
-    from backend.models.song import Song
     song = Song.query.get_or_404(song_id)
     if song not in ministration.songs:
         ministration.songs.append(song)
@@ -147,7 +151,6 @@ def add_song_to_ministration(ministration_id):
 @ministration_bp.route("/api/ministrations/<int:ministration_id>/songs/<int:song_id>", methods=["DELETE"])
 def remove_song_from_ministration(ministration_id, song_id):
     ministration = Ministration.query.get_or_404(ministration_id)
-    from backend.models.song import Song
     song = Song.query.get_or_404(song_id)
     if song in ministration.songs:
         ministration.songs.remove(song)

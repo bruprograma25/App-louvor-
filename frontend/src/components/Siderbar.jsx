@@ -1,4 +1,5 @@
 import { NavLink } from "react-router-dom";
+import logo from "../assets/logo.png";
 import {
   Home,
   CalendarDays,
@@ -33,9 +34,12 @@ const adminNavigation = [
 export default function Siderbar() {
   return (
     <aside className="flex h-screen w-72 flex-col gap-6 border-r border-slate-200 bg-white p-6 shadow-sm">
-      <div className="space-y-2">
-        <div className="text-2xl font-semibold text-slate-900">Ministério de Louvor</div>
-        <p className="text-sm uppercase tracking-[.18em] text-rose-600">Gestão Interna</p>
+      <div className="flex flex-col items-center gap-4 text-center">
+        <img src={logo} alt="Altar Logo" className="h-20 w-auto object-contain" />
+        <div className="space-y-1">
+          <div className="text-xl font-bold text-slate-900">Ministério de Louvor</div>
+          <p className="text-xs uppercase tracking-[.18em] text-rose-600 font-medium">Gestão Interna</p>
+        </div>
       </div>
 
       <nav className="flex flex-1 flex-col gap-2">
@@ -47,7 +51,7 @@ export default function Siderbar() {
               to={item.path}
               className={({ isActive }) =>
                 `flex items-center gap-3 rounded-3xl px-4 py-3 text-sm font-medium transition ${
-                  isActive ? "bg-red-600 text-white shadow-sm" : "text-slate-700 hover:bg-slate-50"
+                  isActive ? "bg-rose-600 text-white shadow-sm" : "text-slate-700 hover:bg-slate-50"
                 }`
               }
             >
@@ -69,7 +73,7 @@ export default function Siderbar() {
                 to={item.path}
                 className={({ isActive }) =>
                   `flex items-center gap-3 rounded-3xl px-4 py-3 text-sm font-medium transition ${
-                    isActive ? "bg-red-600 text-white shadow-sm" : "text-slate-700 hover:bg-slate-100"
+                    isActive ? "bg-rose-600 text-white shadow-sm" : "text-slate-700 hover:bg-slate-100"
                   }`
                 }
               >

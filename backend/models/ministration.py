@@ -1,4 +1,4 @@
-﻿from datetime import datetime
+from datetime import datetime
 try:
     from backend.database.db import db
 except ImportError:
@@ -24,8 +24,31 @@ class Ministration(db.Model):
     whatsapp_url = db.Column(db.String(500))
     notified = db.Column(db.Boolean, default=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    
+    # Novos campos para integrar a escala e detalhes
+    type = db.Column(db.String(100))
+    startTime = db.Column(db.String(50))
+    endTime = db.Column(db.String(50))
+    location = db.Column(db.String(255))
+    team_json = db.Column(db.Text)
+
     songs = db.relationship('Song', secondary=ministration_song, backref=db.backref('ministrations', lazy='dynamic'), lazy='joined')
     confirmations = db.relationship('Confirmation', backref='ministration', lazy='dynamic')
+
+    @property
+    def team(self):
+        import json
+        if not self.team_json:
+            return []
+        try:
+            return json.loads(self.team_json)
+        except Exception:
+            return []
+
+    @team.setter
+    def team(self, value):
+        import json
+        self.team_json = json.dumps(value)
 
     def to_dict(self):
         # include associated songs if relationship present
@@ -60,6 +83,11 @@ class Ministration(db.Model):
             "playlist_url": self.playlist_url,
             "whatsapp_url": self.whatsapp_url,
             "notified": self.notified,
+            "type": self.type,
+            "startTime": self.startTime,
+            "endTime": self.endTime,
+            "location": self.location,
+            "team": self.team,
             "songs": songs,
             "confirmations": confirmations,
             "created_at": self.created_at.isoformat() if self.created_at else None

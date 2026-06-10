@@ -1,4 +1,4 @@
-﻿from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify
 from flask_socketio import emit
 
 try:
@@ -25,6 +25,10 @@ def create_notification():
 
     db.session.add(notification)
     db.session.commit()
-    emit("notification", notification.to_dict(), broadcast=True)
+    
+    from flask import current_app
+    socketio = current_app.extensions.get('socketio')
+    if socketio:
+        socketio.emit("notification", notification.to_dict(), broadcast=True)
 
     return jsonify(notification.to_dict()), 201

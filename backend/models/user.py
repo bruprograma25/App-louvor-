@@ -34,6 +34,8 @@ class User(db.Model):
             "status": self.status,
             "image": self.image,
             "voice": self.voice,
+            "voiceType": self.voice,
             "birth_date": self.birth_date,
+            "birthdate": self.birth_date,
             "notes": self.notes
         }

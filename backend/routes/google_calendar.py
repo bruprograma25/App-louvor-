@@ -23,7 +23,13 @@ TOKENS_FILE = os.environ.get('GOOGLE_TOKENS_FILE', 'google_tokens.json')
 def get_oauth_url():
     # state can include ministration_id to create event after auth
     ministration_id = request.args.get('ministration_id')
-    flow = Flow.from_client_secrets_file(CLIENT_SECRETS_FILE, scopes=SCOPES)
+    try:
+        flow = Flow.from_client_secrets_file(CLIENT_SECRETS_FILE, scopes=SCOPES)
+    except FileNotFoundError:
+        return jsonify({'error': f'Google OAuth credentials file not found: {CLIENT_SECRETS_FILE}. Please configure integrations.'}), 404
+    except Exception as e:
+        return jsonify({'error': f'Failed to load Google credentials: {str(e)}'}), 500
+
     flow.redirect_uri = request.host_url.rstrip('/') + '/api/google/oauth2callback'
     auth_url, state = flow.authorization_url(access_type='offline', include_granted_scopes='true', state=ministration_id)
     return jsonify({'auth_url': auth_url, 'state': state})
@@ -86,7 +92,13 @@ def create_event(ministration_id):
     creds = load_credentials()
     if not creds:
         # return oauth url so frontend can redirect user to authorize
-        flow = Flow.from_client_secrets_file(CLIENT_SECRETS_FILE, scopes=SCOPES)
+        try:
+            flow = Flow.from_client_secrets_file(CLIENT_SECRETS_FILE, scopes=SCOPES)
+        except FileNotFoundError:
+            return jsonify({'error': f'Google OAuth credentials file not found: {CLIENT_SECRETS_FILE}. Please configure integrations.'}), 404
+        except Exception as e:
+            return jsonify({'error': f'Failed to load Google credentials: {str(e)}'}), 500
+
         flow.redirect_uri = request.host_url.rstrip('/') + '/api/google/oauth2callback'
         auth_url, state = flow.authorization_url(access_type='offline', include_granted_scopes='true', state=str(ministration_id))
         return jsonify({'need_auth': True, 'auth_url': auth_url})

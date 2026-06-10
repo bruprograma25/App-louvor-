@@ -25,6 +25,9 @@ def create_user():
     role = data.get("role", "member")
     status = data.get("status", "Apto")
     image = data.get("image")
+    voice = data.get("voice") or data.get("voiceType")
+    birth_date = data.get("birth_date") or data.get("birthdate")
+    notes = data.get("notes")
 
     if not email or not password_text:
         return jsonify({"error": "Email e senha são obrigatórios"}), 400
@@ -42,6 +45,9 @@ def create_user():
         role=role,
         status=status,
         image=image,
+        voice=voice,
+        birth_date=birth_date,
+        notes=notes,
     )
 
     db.session.add(user)
@@ -72,9 +78,24 @@ def patch_user(user_id):
     user.role = data.get("role", user.role)
     user.status = data.get("status", user.status)
     user.image = data.get("image", user.image)
+    
+    if "voice" in data or "voiceType" in data:
+        user.voice = data.get("voice") or data.get("voiceType")
+    if "birth_date" in data or "birthdate" in data:
+        user.birth_date = data.get("birth_date") or data.get("birthdate")
+    if "notes" in data:
+        user.notes = data.get("notes")
 
     db.session.commit()
     return jsonify(user.to_dict())
+
+
+@user_bp.route("/api/users/<int:user_id>", methods=["DELETE"])
+def delete_user(user_id):
+    user = User.query.get_or_404(user_id)
+    db.session.delete(user)
+    db.session.commit()
+    return jsonify({"message": "Usuário deletado com sucesso"})
 
 
 @user_bp.route("/api/users/<int:user_id>/mark_beginner", methods=["POST"])

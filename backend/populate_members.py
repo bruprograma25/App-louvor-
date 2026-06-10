@@ -81,7 +81,7 @@ def populate_members():
                 existing = User.query.filter_by(email=member_data.get("email")).first() if member_data.get("email") else None
                 
                 if existing:
-                    print(f"⏭️  Pulando {member_data['name']} (email já existe)")
+                    print(f"[SKIP] Pulando {member_data['name']} (email já existe)")
                     skipped_count += 1
                     continue
                 
@@ -98,20 +98,20 @@ def populate_members():
                 )
                 
                 db.session.add(user)
-                print(f"✅ Adicionado: {member_data['name']} ({member_data['voice']})")
+                print(f"[OK] Adicionado: {member_data['name']} ({member_data['voice']})")
                 added_count += 1
                 
             except Exception as e:
-                print(f"❌ Erro ao adicionar {member_data['name']}: {str(e)}")
+                print(f"[ERR] Erro ao adicionar {member_data['name']}: {str(e)}")
                 skipped_count += 1
         
         # Commit
         db.session.commit()
         
         print("\n" + "="*60)
-        print(f"✅ Membros adicionados: {added_count}")
-        print(f"⏭️  Membros pulados: {skipped_count}")
-        print(f"📊 Total de membros no banco: {User.query.count()}")
+        print(f"[OK] Membros adicionados: {added_count}")
+        print(f"[SKIP] Membros pulados: {skipped_count}")
+        print(f"[TOTAL] Total de membros no banco: {User.query.count()}")
         print("="*60)
 
 if __name__ == "__main__":

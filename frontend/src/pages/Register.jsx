@@ -1,4 +1,4 @@
-﻿import { useState } from "react";
+﻿﻿import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import api from "../api/api";
 
@@ -60,6 +60,22 @@ export default function Register() {
             type="password"
             className="w-full rounded-3xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none focus:border-sky-500"
           />
+        </div>
+
+        <div className="mt-6 space-y-3">
+          <button
+            type="button"
+            onClick={() => window.location.href = `${import.meta.env.VITE_API_URL}/auth/google`}
+            className="flex w-full items-center justify-center gap-3 rounded-full border border-slate-200 bg-white px-5 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+          >
+            <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/layout/google.svg" alt="Google" className="h-5 w-5" />
+            Cadastrar com Google
+          </button>
+        </div>
+
+        <div className="relative my-6">
+          <div className="absolute inset-0 flex items-center"><span className="w-full border-t border-slate-200"></span></div>
+          <div className="relative flex justify-center text-xs uppercase"><span className="bg-white px-2 text-slate-500">Ou criar conta com email</span></div>
         </div>
 
         <button

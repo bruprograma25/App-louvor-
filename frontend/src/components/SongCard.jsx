@@ -1,6 +1,15 @@
 import { Youtube, Music2, Play, BookOpen, Trash2 } from "lucide-react";
 
 export default function SongCard({ song, onDelete }) {
+  const getDirectLink = (type, savedUrl) => {
+    if (savedUrl) return savedUrl;
+    const query = encodeURIComponent(`${song.title} ${song.artist || ""}`);
+    if (type === 'yt') return `https://www.youtube.com/results?search_query=${query}`;
+    if (type === 'spotify') return `https://open.spotify.com/search/${query}`;
+    if (type === 'cifra') return `https://www.cifraclub.com.br/busca/?q=${query}`;
+    return "#";
+  };
+
   return (
     <div className="rounded-[28px] border border-slate-200 bg-white p-5 shadow-sm transition hover:shadow-md">
       <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
@@ -32,45 +41,50 @@ export default function SongCard({ song, onDelete }) {
       </div>
 
       <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div className="text-sm text-slate-500">
-          {song.youtube_url ? (
-            <a href={song.youtube_url} target="_blank" rel="noreferrer" className="font-semibold text-slate-900 hover:text-rose-600">
-              Ver no YouTube
-            </a>
-          ) : (
-            "YouTube não adicionado"
-          )}
+        <div className="text-sm">
+          <a 
+            href={getDirectLink('yt', song.youtube_url)} 
+            target="_blank" 
+            rel="noreferrer" 
+            className="font-semibold text-slate-900 hover:text-rose-600 transition"
+          >
+            {song.youtube_url ? "Ver no YouTube" : "Buscar no YouTube"}
+          </a>
         </div>
         <div className="flex flex-wrap items-center gap-2">
           <a
-            href={song.youtube_url || "#"}
+            href={getDirectLink('yt', song.youtube_url)}
             target="_blank"
             rel="noreferrer"
             className={`inline-flex items-center gap-2 rounded-full border px-4 py-2 text-sm font-semibold transition ${
-              song.youtube_url ? "border-rose-600 bg-rose-600 text-white hover:bg-rose-700" : "border-slate-200 bg-slate-50 text-slate-500 cursor-not-allowed"
+              song.youtube_url ? "border-rose-600 bg-rose-600 text-white hover:bg-rose-700" : "border-rose-200 bg-rose-50 text-rose-600 hover:bg-rose-100"
             }`}
           >
             <Youtube className="h-4 w-4" />
             YT
           </a>
           <a
-            href={song.spotify_url || "#"}
+            href={getDirectLink('spotify', song.spotify_url)}
             target="_blank"
             rel="noreferrer"
             className={`inline-flex items-center gap-2 rounded-full border px-4 py-2 text-sm font-semibold transition ${
-              song.spotify_url ? "border-emerald-600 bg-emerald-600 text-white hover:bg-emerald-700" : "border-slate-200 bg-slate-50 text-slate-500 cursor-not-allowed"
+              song.spotify_url ? "border-emerald-600 bg-emerald-600 text-white hover:bg-emerald-700" : "border-emerald-200 bg-emerald-50 text-emerald-600 hover:bg-emerald-100"
             }`}
           >
             <Play className="h-4 w-4" />
             Spotify
           </a>
-          <button
-            type="button"
-            className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-4 py-2 text-sm font-semibold text-slate-700 transition hover:border-slate-400 hover:bg-slate-100"
+          <a
+            href={getDirectLink('cifra', song.cifra_url)}
+            target="_blank"
+            rel="noreferrer"
+            className={`inline-flex items-center gap-2 rounded-full border px-4 py-2 text-sm font-semibold transition ${
+              song.cifra_url ? "border-amber-600 bg-amber-600 text-white hover:bg-amber-700" : "border-amber-200 bg-amber-50 text-amber-600 hover:bg-amber-100"
+            }`}
           >
             <BookOpen className="h-4 w-4" />
             Cifra
-          </button>
+          </a>
           <button
             type="button"
             onClick={onDelete}

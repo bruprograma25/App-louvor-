@@ -17,7 +17,7 @@ const DEFAULT_MEMBERS = [
     status: "Apto",
     birthdate: "20/05/1990",
     notes: "",
-    frequency: "",
+    frequency: "3",
     spotify_url: "https://open.spotify.com/search/BRUNA",
     youtube_url: "https://www.youtube.com/results?search_query=BRUNA",
     cifra_url: "https://www.cifraclub.com.br/busca/?q=BRUNA",
@@ -25,7 +25,7 @@ const DEFAULT_MEMBERS = [
   {
     id: "member-claudia",
     full_name: "CLAUDIA",
-    email: "claudiakismann@gmail.com",
+    email: "claudiaklismann@gmail.com",
     voiceType: "Contralto",
     primaryRole: "Líder de Adoração",
     secondaryRole: "Backing Vocal",
@@ -46,7 +46,7 @@ const DEFAULT_MEMBERS = [
     status: "Apto",
     birthdate: "04/12/1986",
     notes: "",
-    frequency: "",
+    frequency: "2",
   },
   {
     id: "member-pr-breno",
@@ -59,7 +59,7 @@ const DEFAULT_MEMBERS = [
     status: "Apto",
     birthdate: "23/02/2025",
     notes: "",
-    frequency: "",
+    frequency: "5",
   },
   {
     id: "member-pra-sarah",
@@ -111,7 +111,6 @@ const DEFAULT_MEMBERS = [
     status: "Apto",
     birthdate: "04/11/1992",
     notes: "",
-    frequency: "",
   },
   {
     id: "member-valeska",
@@ -220,7 +219,7 @@ const DEFAULT_MEMBERS = [
   {
     id: "member-soninha",
     full_name: "SONINHA",
-    email: "soniaisabel.sedr@gmail.com",
+    email: "soniaisabel.sedf@gmail.com",
     voiceType: "Contralto",
     primaryRole: "Backing Vocal",
     secondaryRole: "",
@@ -332,7 +331,7 @@ const DEFAULT_MEMBERS = [
     status: "Apto",
     birthdate: "21/02/1989",
     notes: "",
-    frequency: "",
+    frequency: "8",
   },
   {
     id: "member-vinicius",
@@ -345,7 +344,7 @@ const DEFAULT_MEMBERS = [
     status: "Apto",
     birthdate: "31/01/2009",
     notes: "Líder de time de louvor jovens",
-    frequency: "",
+    frequency: "9",
   },
   {
     id: "member-adriel",
@@ -563,11 +562,9 @@ export default function Members() {
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [spotifyUrl, setSpotifyUrl] = useState("");
-  const [youtubeUrl, setYoutubeUrl] = useState("");
-  const [cifraUrl, setCifraUrl] = useState("");
   const [image, setImage] = useState("");
   const [message, setMessage] = useState("");
+  const [showForm, setShowForm] = useState(false);
   const [search, setSearch] = useState("");
   const [memberStatuses, setMemberStatuses] = useState(
     DEFAULT_MEMBERS.reduce((acc, member) => {
@@ -603,10 +600,7 @@ export default function Members() {
         full_name: fullName,
         email,
         password,
-        image,
-        spotify_url: spotifyUrl,
-        youtube_url: youtubeUrl,
-        cifra_url: cifraUrl,
+        image
       });
 
       const newMember = {
@@ -614,9 +608,6 @@ export default function Members() {
         full_name: fullName,
         email,
         image: response.data?.image || image,
-        spotify_url: spotifyUrl,
-        youtube_url: youtubeUrl,
-        cifra_url: cifraUrl,
         voiceType: response.data?.voiceType || "",
         roleBadge: response.data?.roleBadge || "",
         primaryRole: response.data?.primaryRole || "",
@@ -633,10 +624,8 @@ export default function Members() {
       setFullName("");
       setEmail("");
       setPassword("");
-      setSpotifyUrl("");
-      setYoutubeUrl("");
-      setCifraUrl("");
       setImage("");
+      setShowForm(false);
       setMessage("Membro cadastrado com sucesso.");
     } catch (error) {
       setMessage(error.response?.data?.error || "Erro ao cadastrar membro.");
@@ -718,21 +707,46 @@ export default function Members() {
         member.frequency,
       ]
         .filter(Boolean)
-        .some((value) => value.toLowerCase().includes(search.toLowerCase()))
+        .some((value) => String(value).toLowerCase().includes(search.toLowerCase()))
     );
   }, [members, search]);
 
-  function handleStatusChange(memberId, status) {
-    setMemberStatuses((current) => ({ ...current, [memberId]: status }));
+  async function handleStatusChange(memberId, status) {
+    try {
+      if (String(memberId).startsWith("local-") || String(memberId).startsWith("imported-")) {
+        setMemberStatuses((current) => ({ ...current, [memberId]: status }));
+        return;
+      }
+      const res = await api.patch(`/users/${memberId}`, { status });
+      setMembers((current) => current.map((m) => (m.id === memberId ? { ...m, status: res.data.status } : m)));
+      setMemberStatuses((current) => ({ ...current, [memberId]: res.data.status }));
+      setMessage("Status do integrante atualizado com sucesso.");
+      setTimeout(() => setMessage(""), 3000);
+    } catch (error) {
+      console.error(error);
+      setMessage("Erro ao atualizar status.");
+    }
   }
 
-  function handleDeleteMember(id) {
-    setMembers((current) => current.filter((member) => member.id !== id));
-    setMemberStatuses((current) => {
-      const next = { ...current };
-      delete next[id];
-      return next;
-    });
+  async function handleDeleteMember(id) {
+    try {
+      if (String(id).startsWith("local-") || String(id).startsWith("imported-")) {
+        setMembers((current) => current.filter((member) => member.id !== id));
+        return;
+      }
+      await api.delete(`/users/${id}`);
+      setMembers((current) => current.filter((member) => member.id !== id));
+      setMemberStatuses((current) => {
+        const next = { ...current };
+        delete next[id];
+        return next;
+      });
+      setMessage("Integrante excluído com sucesso.");
+      setTimeout(() => setMessage(""), 3000);
+    } catch (error) {
+      console.error(error);
+      setMessage("Erro ao excluir integrante.");
+    }
   }
 
   async function handleMemberImageChange(memberId, file) {
@@ -785,11 +799,11 @@ export default function Members() {
             <input ref={importInputRef} type="file" accept=".csv,.xlsx,.xlsm" onChange={handleImportChange} className="hidden" />
             <button
               type="button"
-              onClick={handleCreateMember}
-              className="inline-flex items-center gap-2 rounded-full bg-rose-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-rose-700"
+              onClick={() => setShowForm(!showForm)}
+              className="inline-flex items-center gap-2 rounded-full bg-rose-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-rose-700 shadow-md"
             >
-              <Plus className="h-4 w-4" />
-              Adicionar
+              <Plus className={`h-4 w-4 transition-transform ${showForm ? 'rotate-45' : ''}`} />
+              {showForm ? "Fechar" : "Novo Integrante"}
             </button>
           </div>
         </div>
@@ -803,6 +817,48 @@ export default function Members() {
           />
         </div>
       </div>
+
+      {showForm && (
+      <div className="rounded-[32px] border border-slate-200 bg-white p-8 shadow-lg animate-in fade-in slide-in-from-top-4 duration-300">
+        <h2 className="text-xl font-semibold text-slate-900">Novo integrante</h2>
+        <p className="mt-2 text-sm text-slate-500">Cadastre um membro com e-mail e senha para iniciar.</p>
+        <div className="mt-6 grid gap-4 sm:grid-cols-2">
+          <input
+            value={fullName}
+            onChange={(event) => setFullName(event.target.value)}
+            placeholder="Nome completo"
+            className="w-full rounded-3xl border border-slate-200 bg-slate-50 px-5 py-4 text-sm text-slate-900 outline-none focus:border-rose-500"
+          />
+          <input
+            value={email}
+            onChange={(event) => setEmail(event.target.value)}
+            placeholder="Email"
+            type="email"
+            className="w-full rounded-3xl border border-slate-200 bg-slate-50 px-5 py-4 text-sm text-slate-900 outline-none focus:border-rose-500"
+          />
+          <input
+            value={password}
+            onChange={(event) => setPassword(event.target.value)}
+            placeholder="Senha"
+            type="password"
+            className="w-full rounded-3xl border border-slate-200 bg-slate-50 px-5 py-4 text-sm text-slate-900 outline-none focus:border-rose-500"
+          />
+          <div className="rounded-3xl border border-slate-200 bg-slate-50 px-5 py-3 text-sm text-slate-900">
+            <p className="text-xs text-slate-500 font-bold uppercase tracking-wider mb-1">Foto de Perfil</p>
+            <input type="file" onChange={(e) => setImage(e.target.files?.[0] ? URL.createObjectURL(e.target.files[0]) : "")} className="w-full text-xs" />
+          </div>
+        </div>
+        <div className="mt-8 flex justify-end">
+          <button
+            onClick={handleCreateMember}
+            className="rounded-full bg-slate-900 px-10 py-4 text-sm font-semibold text-white transition hover:bg-slate-800 shadow-md"
+          >
+            Cadastrar Integrante
+          </button>
+        </div>
+        {message && <p className="mt-4 text-sm text-rose-600">{message}</p>}
+      </div>
+      )}
 
       <div className="grid gap-5 lg:grid-cols-2">
         {filteredMembers.map((member) => (
@@ -928,56 +984,6 @@ export default function Members() {
             {member.notes && <p className="mt-3 text-sm text-slate-600">{member.notes}</p>}
           </div>
         ))}
-      </div>
-
-      <div className="rounded-[32px] border border-slate-200 bg-white p-8 shadow-sm">
-        <h2 className="text-xl font-semibold text-slate-900">Novo integrante</h2>
-        <p className="mt-2 text-sm text-slate-500">Cadastre um membro com e-mail e senha para iniciar.</p>
-        <div className="mt-6 grid gap-4 sm:grid-cols-2">
-          <input
-            value={fullName}
-            onChange={(event) => setFullName(event.target.value)}
-            placeholder="Nome completo"
-            className="w-full rounded-3xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none focus:border-rose-500"
-          />
-          <input
-            value={email}
-            onChange={(event) => setEmail(event.target.value)}
-            placeholder="Email"
-            type="email"
-            className="w-full rounded-3xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none focus:border-rose-500"
-          />
-          <input
-            value={password}
-            onChange={(event) => setPassword(event.target.value)}
-            placeholder="Senha"
-            type="password"
-            className="w-full rounded-3xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none focus:border-rose-500"
-          />
-          <div className="rounded-3xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900">
-            <p className="text-sm text-slate-500">Upload de foto</p>
-            <input type="file" onChange={(e) => setImage(e.target.files?.[0] ? URL.createObjectURL(e.target.files[0]) : "")} className="mt-2 w-full text-sm" />
-          </div>
-          <input
-            value={spotifyUrl}
-            onChange={(event) => setSpotifyUrl(event.target.value)}
-            placeholder="Spotify URL (opcional)"
-            className="w-full rounded-3xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none focus:border-rose-500"
-          />
-          <input
-            value={youtubeUrl}
-            onChange={(event) => setYoutubeUrl(event.target.value)}
-            placeholder="YouTube URL (opcional)"
-            className="w-full rounded-3xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none focus:border-rose-500"
-          />
-          <input
-            value={cifraUrl}
-            onChange={(event) => setCifraUrl(event.target.value)}
-            placeholder="Cifra Club URL (opcional)"
-            className="w-full rounded-3xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none focus:border-rose-500"
-          />
-        </div>
-        {message && <p className="mt-4 text-sm text-rose-600">{message}</p>}
       </div>
     </div>
   );

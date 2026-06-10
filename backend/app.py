@@ -1,4 +1,4 @@
-﻿import os
+import os
 from dotenv import load_dotenv
 load_dotenv()
 
@@ -86,15 +86,17 @@ def create_app():
                 db.session.execute(text("ALTER TABLE ministration ADD COLUMN notified BOOLEAN"))
             
             # Força a criação dos campos que você pediu na aba de ministração
-            columns_to_add = ["minister", "cult_type", "status", "playlist_url", "whatsapp_url"]
+            columns_to_add = ["minister", "cult_type", "status", "playlist_url", "whatsapp_url", "type", "startTime", "endTime", "location", "team_json"]
             for col in columns_to_add:
                 if col not in existing_min_cols:
                     db.session.execute(text(f"ALTER TABLE ministration ADD COLUMN {col} TEXT"))
             
             result_user = db.session.execute(text("PRAGMA table_info('user')")).all()
             existing_user_cols = {row[1] for row in result_user}
-            if "status" not in existing_user_cols:
-                db.session.execute(text("ALTER TABLE user ADD COLUMN status TEXT"))
+            user_cols_to_add = ["status", "voice", "birth_date", "notes"]
+            for col in user_cols_to_add:
+                if col not in existing_user_cols:
+                    db.session.execute(text(f"ALTER TABLE user ADD COLUMN {col} TEXT"))
             db.session.commit()
         except Exception:
             db.session.rollback()

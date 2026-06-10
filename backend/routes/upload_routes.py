@@ -1,4 +1,4 @@
-﻿import os
+import os
 
 from flask import Blueprint, request, jsonify, current_app
 from werkzeug.utils import secure_filename
@@ -19,6 +19,6 @@ def upload():
 
     path = os.path.join(upload_folder, filename)
     file.save(path)
-    url = f"/uploads/{filename}"
+    url = f"{request.host_url.rstrip('/')}/uploads/{filename}"
 
     return jsonify({"url": url})

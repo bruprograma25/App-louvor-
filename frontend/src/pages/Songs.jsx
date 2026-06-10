@@ -3,8 +3,10 @@ import api from "../api/api";
 import SongCard from "../components/SongCard";
 import SpotifySearch from "../components/SpotifySearch";
 import { Search, Plus, Music2 } from "lucide-react";
+import { useAuth } from "../context/AuthContext";
 
 export default function Songs() {
+  const { user } = useAuth();
   const [songs, setSongs] = useState([]);
   const [title, setTitle] = useState("");
   const [artist, setArtist] = useState("");
@@ -12,9 +14,12 @@ export default function Songs() {
   const [key, setKey] = useState("");
   const [bpm, setBpm] = useState("");
   const [spotifyUrl, setSpotifyUrl] = useState("");
+  const [cifraUrl, setCifraUrl] = useState("");
   const [youtubeUrl, setYoutubeUrl] = useState("");
+  const [notes, setNotes] = useState("");
   const [search, setSearch] = useState("");
   const [selectedLeader, setSelectedLeader] = useState("Todas");
+  const [showForm, setShowForm] = useState(false);
 
   useEffect(() => {
     loadSongs();
@@ -36,6 +41,11 @@ export default function Songs() {
   }
 
   async function handleCreateSong() {
+    if (!title || !artist) {
+      alert("Por favor, preencha pelo menos título e artista.");
+      return;
+    }
+
     try {
       const response = await api.post("/songs", {
         title,
@@ -44,17 +54,22 @@ export default function Songs() {
         key,
         bpm: bpm ? Number(bpm) : undefined,
         spotify_url: spotifyUrl,
+        cifra_url: cifraUrl,
         youtube_url: youtubeUrl,
+        notes
       });
 
-      setSongs((current) => [response.data, ...current]);
+      loadSongs(); // Recarrega a lista do backend para garantir consistência
       setTitle("");
       setArtist("");
       setLeader("");
       setKey("");
       setBpm("");
       setSpotifyUrl("");
+      setCifraUrl("");
       setYoutubeUrl("");
+      setNotes("");
+      setShowForm(false);
     } catch (error) {
       console.error(error);
     }
@@ -98,14 +113,16 @@ export default function Songs() {
             <h1 className="text-3xl font-semibold text-slate-900">Banco de Canções</h1>
             <p className="mt-2 text-sm text-slate-500">{songs.length} canções cadastradas</p>
           </div>
-          <button
-            type="button"
-            onClick={handleCreateSong}
-            className="inline-flex items-center gap-2 rounded-full bg-rose-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-rose-700"
-          >
-            <Plus className="h-4 w-4" />
-            Adicionar Canção
-          </button>
+          {(user?.role === 'admin' || user?.leader) && (
+            <button
+              type="button"
+              onClick={() => setShowForm(!showForm)}
+              className="inline-flex items-center gap-2 rounded-full bg-rose-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-rose-700 shadow-md"
+            >
+              <Plus className={`h-4 w-4 transition-transform ${showForm ? 'rotate-45' : ''}`} />
+              {showForm ? "Fechar" : "Adicionar Canção"}
+            </button>
+          )}
         </div>
 
         <div className="mt-6 grid gap-4 md:grid-cols-[1fr_auto]">
@@ -118,9 +135,14 @@ export default function Songs() {
               className="w-full rounded-full border border-slate-200 bg-slate-50 py-4 pl-12 pr-4 text-sm text-slate-900 outline-none focus:border-rose-500"
             />
           </div>
-          <div className="rounded-full border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-700">
-            Filtrar por líder
-          </div>
+          <select 
+            value={selectedLeader}
+            onChange={(e) => setSelectedLeader(e.target.value)}
+            className="rounded-full border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-700 outline-none"
+          >
+            <option value="Todas">Todos os Líderes</option>
+            {leaderOptions.filter(l => l !== "Todas").map(l => <option key={l} value={l}>{l}</option>)}
+          </select>
         </div>
 
         <div className="mt-6 flex flex-wrap gap-2">
@@ -140,7 +162,8 @@ export default function Songs() {
           ))}
         </div>
 
-        <div className="mt-8 space-y-4">
+        {(user?.role === 'admin' || user?.leader) && showForm && (
+        <div className="mt-8 space-y-4 animate-in fade-in slide-in-from-top-4 duration-300">
           {/* Spotify Search Component */}
           <div className="rounded-2xl border border-green-200 bg-green-50 p-4">
             <SpotifySearch onSelectTrack={handleSelectSpotifyTrack} />
@@ -188,13 +211,35 @@ export default function Songs() {
               className="w-full rounded-3xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none focus:border-rose-500"
             />
             <input
+              value={cifraUrl}
+              onChange={(event) => setCifraUrl(event.target.value)}
+              placeholder="Link Cifra Club"
+              className="w-full rounded-3xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none focus:border-rose-500"
+            />
+            <input
               value={youtubeUrl}
               onChange={(event) => setYoutubeUrl(event.target.value)}
               placeholder="Link YouTube"
               className="w-full rounded-3xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none focus:border-rose-500"
             />
           </div>
+          <textarea
+            value={notes}
+            onChange={(e) => setNotes(e.target.value)}
+            placeholder="Observações importantes da canção..."
+            className="w-full rounded-3xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none focus:border-rose-500"
+            rows={2}
+          />
+          <div className="flex justify-end pt-2">
+            <button
+              onClick={handleCreateSong}
+              className="rounded-full bg-slate-900 px-8 py-3 text-sm font-semibold text-white transition hover:bg-slate-800 shadow-lg"
+            >
+              Cadastrar Música
+            </button>
+          </div>
         </div>
+        )}
       </div>
 
       <div className="grid gap-5 xl:grid-cols-2">

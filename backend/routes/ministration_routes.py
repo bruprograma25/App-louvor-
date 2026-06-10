@@ -1,4 +1,4 @@
-﻿from flask import Blueprint, jsonify, request
+from flask import Blueprint, jsonify, request
 import os
 import smtplib
 from email.message import EmailMessage
@@ -61,6 +61,29 @@ def create_ministration():
     ministration.date = data.get("date")
     ministration.notes = data.get("notes")
     ministration.attachment_url = data.get("attachment_url")
+    ministration.minister = data.get("minister")
+    ministration.cult_type = data.get("cult_type")
+    ministration.status = data.get("status", "Rascunho")
+    ministration.playlist_url = data.get("playlist_url")
+    ministration.whatsapp_url = data.get("whatsapp_url")
+    ministration.type = data.get("type")
+    ministration.startTime = data.get("startTime")
+    ministration.endTime = data.get("endTime")
+    ministration.location = data.get("location")
+
+    # Time/escala
+    if "team" in data:
+        import json
+        ministration.team_json = json.dumps(data.get("team"))
+
+    # Repertório
+    songs_data = data.get("songs", [])
+    for s_data in songs_data:
+        s_id = s_data.get("id") if isinstance(s_data, dict) else s_data
+        if s_id:
+            song = Song.query.get(s_id)
+            if song and song not in ministration.songs:
+                ministration.songs.append(song)
 
     db.session.add(ministration)
     db.session.commit()
@@ -72,10 +95,33 @@ def update_ministration(ministration_id):
     ministration = Ministration.query.get_or_404(ministration_id)
     data = request.json or {}
 
-    ministration.title = data.get("title", ministration.title)
-    ministration.date = data.get("date", ministration.date)
-    ministration.notes = data.get("notes", ministration.notes)
-    ministration.attachment_url = data.get("attachment_url", ministration.attachment_url)
+    if "title" in data: ministration.title = data.get("title")
+    if "date" in data: ministration.date = data.get("date")
+    if "notes" in data: ministration.notes = data.get("notes")
+    if "attachment_url" in data: ministration.attachment_url = data.get("attachment_url")
+    if "minister" in data: ministration.minister = data.get("minister")
+    if "cult_type" in data: ministration.cult_type = data.get("cult_type")
+    if "status" in data: ministration.status = data.get("status")
+    if "playlist_url" in data: ministration.playlist_url = data.get("playlist_url")
+    if "whatsapp_url" in data: ministration.whatsapp_url = data.get("whatsapp_url")
+    if "type" in data: ministration.type = data.get("type")
+    if "startTime" in data: ministration.startTime = data.get("startTime")
+    if "endTime" in data: ministration.endTime = data.get("endTime")
+    if "location" in data: ministration.location = data.get("location")
+
+    if "team" in data:
+        import json
+        ministration.team_json = json.dumps(data.get("team"))
+
+    if "songs" in data:
+        ministration.songs = []
+        songs_data = data.get("songs", [])
+        for s_data in songs_data:
+            s_id = s_data.get("id") if isinstance(s_data, dict) else s_data
+            if s_id:
+                song = Song.query.get(s_id)
+                if song:
+                    ministration.songs.append(song)
 
     db.session.commit()
     return jsonify(ministration.to_dict())
@@ -86,6 +132,30 @@ def delete_ministration(ministration_id):
     db.session.delete(ministration)
     db.session.commit()
     return jsonify({"message": "Ministração removida"})
+
+
+@ministration_bp.route("/api/ministrations/<int:ministration_id>/members", methods=["POST"])
+def add_member_to_ministration(ministration_id):
+    ministration = Ministration.query.get_or_404(ministration_id)
+    data = request.json or {}
+    name = data.get("name")
+    role = data.get("role")
+    if not name or not role:
+        return jsonify({"error": "Nome e função são obrigatórios"}), 400
+
+    import json
+    team = []
+    if ministration.team_json:
+        try:
+            team = json.loads(ministration.team_json)
+        except Exception:
+            team = []
+
+    team.append({"name": name, "role": role})
+    ministration.team_json = json.dumps(team)
+    db.session.commit()
+
+    return jsonify(ministration.to_dict())
 
 
 @ministration_bp.route("/api/ministrations/<int:ministration_id>/notify", methods=["POST"])

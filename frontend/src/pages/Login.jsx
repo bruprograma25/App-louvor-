@@ -1,78 +1,93 @@
-﻿﻿import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+﻿import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { Mail, Lock, Music, ArrowRight } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
+import api from "../api/api";
 
 export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
-  const navigate = useNavigate();
+  const [loading, setLoading] = useState(false);
   const { login } = useAuth();
+  const navigate = useNavigate();
 
-  async function handleLogin() {
+  async function handleSubmit(e) {
+    e.preventDefault();
+    setLoading(true);
+    setError("");
     try {
-      await login({ email, password });
+      const response = await api.post("/auth/login", { email, password });
+      login(response.data.user, response.data.access_token);
       navigate("/dashboard");
     } catch (err) {
-      setError(err.response?.data?.error || "Falha ao fazer login.");
+      setError("E-mail ou senha incorretos.");
+    } finally {
+      setLoading(false);
     }
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-slate-50 px-6 py-10">
-      <div className="w-full max-w-md rounded-[32px] border border-slate-200 bg-white p-10 shadow-sm">
-        <h1 className="text-3xl font-semibold text-slate-900">Entrar</h1>
-        <p className="mt-2 text-sm text-slate-500">Acesse o painel do louvor com suas credenciais.</p>
-
-        {error && <div className="mt-6 rounded-3xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{error}</div>}
-
-        <div className="mt-6 space-y-4">
-          <input
-            value={email}
-            onChange={(event) => setEmail(event.target.value)}
-            placeholder="Email"
-            type="email"
-            className="w-full rounded-3xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none focus:border-sky-500"
-          />
-          <input
-            value={password}
-            onChange={(event) => setPassword(event.target.value)}
-            placeholder="Senha"
-            type="password"
-            className="w-full rounded-3xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none focus:border-sky-500"
-          />
+    <div className="relative min-h-screen flex items-center justify-center p-6 overflow-hidden">
+      {/* Fundo com efeito blur para destacar o card */}
+      <div className="absolute inset-0 bg-rose-50/50 backdrop-blur-sm -z-10" />
+      
+      <div className="w-full max-w-[440px] rounded-[42px] border border-white/40 bg-white/80 p-10 shadow-2xl backdrop-blur-md">
+        <div className="flex flex-col items-center text-center">
+          <div className="mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-rose-600 text-white shadow-lg shadow-rose-200">
+            <Music size={32} />
+          </div>
+          <h1 className="text-3xl font-bold text-slate-900">Bem-vindo</h1>
+          <p className="mt-2 text-slate-500">Acesse sua conta para gerenciar o louvor</p>
         </div>
 
-        <div className="mt-6 space-y-3">
+        <form onSubmit={handleSubmit} className="mt-10 space-y-5">
+          <div className="relative">
+            <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={20} />
+            <input
+              type="email"
+              required
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="E-mail"
+              className="w-full rounded-3xl border border-slate-200 bg-white/50 py-4 pl-12 pr-5 text-sm outline-none transition focus:border-rose-500 focus:ring-2 focus:ring-rose-500/10"
+            />
+          </div>
+
+          <div className="relative">
+            <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={20} />
+            <input
+              type="password"
+              required
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="Senha"
+              className="w-full rounded-3xl border border-slate-200 bg-white/50 py-4 pl-12 pr-5 text-sm outline-none transition focus:border-rose-500 focus:ring-2 focus:ring-rose-500/10"
+            />
+          </div>
+
+          {error && <p className="text-center text-sm font-medium text-rose-600">{error}</p>}
+
           <button
-            type="button"
-            onClick={() => window.location.href = `${import.meta.env.VITE_API_URL}/auth/google`}
-            className="flex w-full items-center justify-center gap-3 rounded-full border border-slate-200 bg-white px-5 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+            type="submit"
+            disabled={loading}
+            className="flex w-full items-center justify-center gap-2 rounded-full bg-slate-900 py-4 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:opacity-70"
           >
-            <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/layout/google.svg" alt="Google" className="h-5 w-5" />
-            Entrar com Google
+            {loading ? "Entrando..." : (
+              <>
+                Entrar no App
+                <ArrowRight size={18} />
+              </>
+            )}
           </button>
+        </form>
+
+        <div className="mt-8 text-center">
+          <p className="text-sm text-slate-500">
+            Não tem uma conta?{" "}
+            <button onClick={() => navigate("/register")} className="font-semibold text-rose-600 hover:underline">Solicitar acesso</button>
+          </p>
         </div>
-
-        <div className="relative my-6">
-          <div className="absolute inset-0 flex items-center"><span className="w-full border-t border-slate-200"></span></div>
-          <div className="relative flex justify-center text-xs uppercase"><span className="bg-white px-2 text-slate-500">Ou continuar com email</span></div>
-        </div>
-
-        <button
-          type="button"
-          onClick={handleLogin}
-          className="mt-6 w-full rounded-full bg-slate-900 px-5 py-3 text-sm font-semibold text-white transition hover:bg-slate-700"
-        >
-          Entrar
-        </button>
-
-        <p className="mt-5 text-center text-sm text-slate-500">
-          Não tem conta?{' '}
-          <Link to="/register" className="font-semibold text-slate-900 hover:text-slate-700">
-            Registre-se aqui
-          </Link>
-        </p>
       </div>
     </div>
   );

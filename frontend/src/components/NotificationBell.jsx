@@ -1,4 +1,4 @@
-﻿import { Bell, CheckCircle2 } from "lucide-react";
+import { Bell, CheckCircle2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { io } from "socket.io-client";
 import api from "../api/api";

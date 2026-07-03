@@ -1,8 +1,9 @@
 ﻿﻿import React, { useState } from "react";
-import { useNavigate, Link } from "react-router-dom"; // Importa Link para o link "Esqueceu a senha?"
+import { useNavigate, Link } from "react-router-dom";
 import { Mail, Lock, Music, ArrowRight, Eye, EyeOff } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
-import api from "../api/api";
+import loginImage from "../assets/login-image.png";
+import { baseRoot } from "../api/api";
 
 export default function Login() {
   const [email, setEmail] = useState("");
@@ -18,22 +19,26 @@ export default function Login() {
     setLoading(true);
     setError("");
     try {
-      const response = await api.post("/auth/login", { email, password });
-      login(response.data.user, response.data.access_token);
+      await login({ email, password });
       navigate("/dashboard");
     } catch (err) {
-      setError("E-mail ou senha incorretos.");
+      const message = err?.response?.data?.error || "E-mail ou senha incorretos.";
+      setError(message);
     } finally {
       setLoading(false);
     }
   }
 
   return (
-    <div className="relative min-h-screen flex items-center justify-center p-6 overflow-hidden">
-      {/* Fundo com efeito blur para destacar o card */}
-      <div className="absolute inset-0 bg-slate-50/50 backdrop-blur-sm -z-10" />
-      
-      <div className="w-full max-w-[440px] rounded-[42px] border border-slate-200 bg-white p-10 shadow-2xl backdrop-blur-md">
+    <div className="relative min-h-screen flex items-center justify-center overflow-hidden bg-slate-950 p-6">
+      <div className="relative z-10 w-full max-w-[440px] overflow-hidden rounded-[42px] border border-slate-200 shadow-2xl">
+        <img
+          src={loginImage}
+          alt="Imagem de fundo da área de login"
+          className="absolute inset-0 h-full w-full object-cover"
+        />
+        <div className="absolute inset-0 bg-slate-950/55" />
+        <div className="relative bg-white/95 p-10 backdrop-blur-md">
         <div className="flex flex-col items-center text-center mb-6">
           <div className="mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-rose-600 text-white shadow-lg shadow-rose-200">
             <Music size={32} />
@@ -99,7 +104,7 @@ export default function Login() {
         <div className="mt-8 space-y-3"> {/* Adiciona um espaçamento superior após o formulário */}
           <button
             type="button"
-            onClick={() => window.location.href = `${import.meta.env.VITE_API_URL}/auth/google`}
+            onClick={() => window.location.href = `${baseRoot}/api/auth/google`}
             className="flex w-full items-center justify-center gap-3 rounded-full border border-slate-200 bg-white px-5 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
           >
             <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/layout/google.svg" alt="Google" className="h-5 w-5" />
@@ -118,6 +123,7 @@ export default function Login() {
             Não tem uma conta?{" "}
             <button onClick={() => navigate("/register")} className="font-semibold text-rose-600 hover:underline">Solicitar acesso</button>
           </p>
+        </div>
         </div>
       </div>
     </div>

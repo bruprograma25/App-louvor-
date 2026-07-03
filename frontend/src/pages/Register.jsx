@@ -1,6 +1,8 @@
 ﻿import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import api from "../api/api";
+import loginImage from "../assets/login-image.png";
+import { baseRoot } from "../api/api";
 
 export default function Register() {
   const [fullName, setFullName] = useState("");
@@ -31,8 +33,15 @@ export default function Register() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-slate-50 px-6 py-10">
-      <div className="w-full max-w-md rounded-[32px] border border-slate-200 bg-white p-10 shadow-sm">
+    <div className="relative min-h-screen flex items-center justify-center overflow-hidden bg-slate-950 px-6 py-10">
+      <div className="relative z-10 w-full max-w-md overflow-hidden rounded-[32px] border border-slate-200 shadow-sm">
+        <img
+          src={loginImage}
+          alt="Imagem de fundo da área de cadastro"
+          className="absolute inset-0 h-full w-full object-cover"
+        />
+        <div className="absolute inset-0 bg-slate-950/55" />
+        <div className="relative bg-white/95 p-10 backdrop-blur-md">
         <h1 className="text-3xl font-semibold text-slate-900">Registrar nova conta</h1>
         <p className="mt-2 text-sm text-slate-500">Crie um usuário para acessar o painel de gestão.</p>
 
@@ -65,7 +74,7 @@ export default function Register() {
         <div className="mt-6 space-y-3">
           <button
             type="button"
-            onClick={() => window.location.href = `${import.meta.env.VITE_API_URL}/auth/google`}
+            onClick={() => window.location.href = `${baseRoot}/api/auth/google`}
             className="flex w-full items-center justify-center gap-3 rounded-full border border-slate-200 bg-white px-5 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
           >
             <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/layout/google.svg" alt="Google" className="h-5 w-5" />
@@ -92,6 +101,7 @@ export default function Register() {
             Faça login
           </Link>
         </p>
+        </div>
       </div>
     </div>
   );

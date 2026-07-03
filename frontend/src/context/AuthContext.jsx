@@ -21,7 +21,12 @@ export function AuthProvider({ children }) {
 
   async function login({ email, password }) {
     const response = await api.post("/login", { email, password });
-    const { token, user: userData } = response.data;
+    const token = response.data.access_token || response.data.token;
+    const userData = response.data.user;
+
+    if (!token || !userData) {
+      throw new Error("Resposta de login inválida");
+    }
 
     localStorage.setItem("token", token);
     localStorage.setItem("user", JSON.stringify(userData));

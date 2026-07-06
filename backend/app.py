@@ -19,6 +19,7 @@ from routes.upload_routes import upload_bp
 from routes.user_routes import user_bp
 from routes.setlist_routes import setlist_bp
 from routes.integrations_routes import integrations_bp
+from routes.process_routes import process_bp
 from sockets.socket_events import register_socket_events
 
 
@@ -44,6 +45,7 @@ def create_app():
     app.register_blueprint(user_bp)
     app.register_blueprint(setlist_bp)
     app.register_blueprint(integrations_bp)
+    app.register_blueprint(process_bp)
     try:
         from backend.routes.google_calendar import calendar_bp
         app.register_blueprint(calendar_bp)

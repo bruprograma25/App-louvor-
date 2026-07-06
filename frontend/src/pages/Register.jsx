@@ -2,7 +2,6 @@
 import { Link, useNavigate } from "react-router-dom";
 import api from "../api/api";
 import loginImage from "../assets/login-image.png";
-import { baseRoot } from "../api/api";
 
 export default function Register() {
   const [fullName, setFullName] = useState("");
@@ -74,7 +73,7 @@ export default function Register() {
         <div className="mt-6 space-y-3">
           <button
             type="button"
-            onClick={() => window.location.href = `${baseRoot}/api/auth/google`}
+            onClick={() => window.location.href = "/api/auth/google"}
             className="flex w-full items-center justify-center gap-3 rounded-full border border-slate-200 bg-white px-5 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
           >
             <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/layout/google.svg" alt="Google" className="h-5 w-5" />

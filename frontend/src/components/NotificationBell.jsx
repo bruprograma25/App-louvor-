@@ -3,7 +3,8 @@ import { useEffect, useState } from "react";
 import { io } from "socket.io-client";
 import api from "../api/api";
 
-const socket = io(import.meta.env.VITE_API_URL?.replace("/api", "") || "http://127.0.0.1:5000", {
+const socket = io({
+  path: "/socket.io",
   autoConnect: true,
 });
 

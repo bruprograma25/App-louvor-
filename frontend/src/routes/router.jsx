@@ -6,11 +6,11 @@ import Dashboard from "../pages/Dashboard";
 import Login from "../pages/Login";
 import Register from "../pages/Register";
 import Members from "../pages/Members";
-import Ministrations from "../pages/Ministrations";
-import Songs from "../pages/Songs";
+import MinstrationsImproved from "../pages/MinstrationsImproved";
+import SongsImproved from "../pages/SongsImproved";
 import CalendarPage from "../pages/Calendar";
-import Notifications from "../pages/Notifications";
-import Processes from "../pages/Processes";
+import NotificationsImproved from "../pages/NotificationsImproved";
+import ProcessesImproved from "../pages/ProcessesImproved";
 import Devotional from "../pages/Devotional";
 import Church from "../pages/Church";
 import Beginners from "../pages/Beginners";
@@ -65,15 +65,15 @@ export default function Router() {
             <Route index element={<Dashboard />} />
             <Route path="dashboard" element={<Dashboard />} />
             <Route path="calendar" element={<CalendarPage />} />
-            <Route path="songs" element={<Songs />} />
-            <Route path="notifications" element={<Notifications />} />
+            <Route path="songs" element={<SongsImproved />} />
+            <Route path="notifications" element={<NotificationsImproved />} />
             <Route path="members" element={<Members />} />
-            <Route path="processes" element={<Processes />} />
+            <Route path="processes" element={<ProcessesImproved />} />
             <Route path="devotional" element={<Devotional />} />
             <Route path="church" element={<Church />} />
             <Route path="beginners" element={<Beginners />} />
             <Route path="profile" element={<Profile />} />
-            <Route path="ministrations" element={<Ministrations />} />
+            <Route path="ministrations" element={<MinstrationsImproved />} />
             <Route path="setlist" element={<Setlist />} />
           </Route>
           <Route path="*" element={<Navigate to="/" replace />} />

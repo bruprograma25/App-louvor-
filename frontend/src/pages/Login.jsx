@@ -1,9 +1,9 @@
-﻿﻿import React, { useState } from "react";
-import { useNavigate, Link } from "react-router-dom";
+﻿﻿import React, { useEffect, useState } from "react";
+import { useNavigate, Link, useSearchParams } from "react-router-dom";
 import { Mail, Lock, Music, ArrowRight, Eye, EyeOff } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
+import api, { baseRoot } from "../api/api";
 import loginImage from "../assets/login-image.png";
-import { baseRoot } from "../api/api";
 
 export default function Login() {
   const [email, setEmail] = useState("");
@@ -11,8 +11,25 @@ export default function Login() {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-  const { login } = useAuth();
+  const { login, setUser } = useAuth();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+
+  useEffect(() => {
+    const googleToken = searchParams.get("googleToken");
+    const googleUser = searchParams.get("googleUser");
+    if (googleToken && googleUser) {
+      api.defaults.headers.common.Authorization = `Bearer ${googleToken}`;
+      localStorage.setItem("token", googleToken);
+      localStorage.setItem("user", googleUser);
+      try {
+        setUser(JSON.parse(googleUser));
+      } catch (parseError) {
+        console.error("Falha ao parsear usuário Google:", parseError);
+      }
+      navigate("/dashboard", { replace: true });
+    }
+  }, [navigate, searchParams, setUser]);
 
   async function handleSubmit(e) {
     e.preventDefault();
@@ -104,7 +121,7 @@ export default function Login() {
         <div className="mt-8 space-y-3"> {/* Adiciona um espaçamento superior após o formulário */}
           <button
             type="button"
-            onClick={() => window.location.href = `${baseRoot}/api/auth/google`}
+            onClick={() => window.location.href = "/api/auth/google"}
             className="flex w-full items-center justify-center gap-3 rounded-full border border-slate-200 bg-white px-5 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
           >
             <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/layout/google.svg" alt="Google" className="h-5 w-5" />

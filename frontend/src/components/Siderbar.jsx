@@ -12,6 +12,7 @@ import {
   Star,
   User,
   ListChecks,
+  Cross,
 } from "lucide-react";
 
 const navigation = [
@@ -35,7 +36,10 @@ export default function Siderbar() {
   return (
     <aside className="flex h-screen w-72 flex-col gap-6 border-r border-slate-200 bg-white p-6 shadow-sm">
       <div className="flex flex-col items-center gap-4 text-center">
-        <img src={logo} alt="Altar Logo" className="h-20 w-auto object-contain" />
+        <div className="relative">
+          <img src={logo} alt="Altar Logo" className="h-20 w-auto object-contain" />
+          <Cross className="absolute -top-2 -right-2 h-6 w-6 text-rose-600" />
+        </div>
         <div className="space-y-1">
           <div className="text-xl font-bold text-slate-900">Ministério de Louvor</div>
           <p className="text-xs uppercase tracking-[.18em] text-rose-600 font-medium">Gestão Interna</p>

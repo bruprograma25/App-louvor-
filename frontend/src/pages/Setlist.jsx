@@ -1,13 +1,18 @@
 ﻿import { useEffect, useState } from "react";
+import { Plus, Trash2, Music, ExternalLink, Link as LinkIcon } from "lucide-react";
 import api from "../api/api";
-import SetlistDnD from "../components/SetlistDnD";
+import { useAuth } from "../context/AuthContext";
 
 export default function Setlist() {
+  const { user } = useAuth();
   const [items, setItems] = useState([]);
+  const [songs, setSongs] = useState([]);
   const [title, setTitle] = useState("");
+  const [selectedSong, setSelectedSong] = useState("");
 
   useEffect(() => {
     loadSetlist();
+    loadSongs();
   }, []);
 
   async function loadSetlist() {
@@ -19,18 +24,40 @@ export default function Setlist() {
     }
   }
 
+  async function loadSongs() {
+    try {
+      const response = await api.get("/songs");
+      setSongs(response.data);
+    } catch (error) {
+      console.error(error);
+    }
+  }
+
   async function handleAddItem() {
-    if (!title) {
+    if (!title && !selectedSong) {
       return;
     }
 
     try {
-      const response = await api.post("/setlist", {
-        title,
+      const payload = {
+        title: title || (songs.find(s => s.id === parseInt(selectedSong))?.title || ""),
         position: items.length,
-      });
+        song_id: selectedSong ? parseInt(selectedSong) : null,
+      };
+      
+      const response = await api.post("/setlist", payload);
       setItems((current) => [response.data, ...current]);
       setTitle("");
+      setSelectedSong("");
+    } catch (error) {
+      console.error(error);
+    }
+  }
+
+  async function handleDeleteItem(id) {
+    try {
+      await api.delete(`/setlist/${id}`);
+      setItems((current) => current.filter((item) => item.id !== id));
     } catch (error) {
       console.error(error);
     }
@@ -54,12 +81,32 @@ export default function Setlist() {
         </div>
 
         <div className="mt-8 grid gap-4 lg:grid-cols-[1.5fr_1fr]">
-          <input
-            value={title}
-            onChange={(event) => setTitle(event.target.value)}
-            placeholder="Título do item do setlist"
-            className="w-full rounded-3xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none focus:border-sky-500"
-          />
+          <div className="space-y-4">
+            <input
+              value={title}
+              onChange={(event) => setTitle(event.target.value)}
+              placeholder="Título do item do setlist"
+              className="w-full rounded-3xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none focus:border-sky-500"
+            />
+            
+            <div>
+              <label className="block text-xs font-semibold text-slate-700 mb-2">
+                Ou selecionar do Banco de Canções
+              </label>
+              <select
+                value={selectedSong}
+                onChange={(event) => setSelectedSong(event.target.value)}
+                className="w-full rounded-3xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none focus:border-sky-500"
+              >
+                <option value="">Selecionar música do banco...</option>
+                {songs.map((s) => (
+                  <option key={s.id} value={s.id}>
+                    {s.title} - {s.artist}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -75,18 +122,65 @@ export default function Setlist() {
                   <div className="flex items-center justify-between gap-3">
                     <div>
                       <h3 className="text-base font-semibold text-slate-900">{item.title}</h3>
-                      <p className="text-sm text-slate-500">{item.song?.title || item.ministration?.title || "Item geral"}</p>
+                      {item.song && (
+                        <p className="text-sm text-slate-500">
+                          {item.song.title} - {item.song.artist}
+                        </p>
+                      )}
                     </div>
-                    <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold uppercase tracking-[.2em] text-slate-600">
-                      Posição {item.position}
-                    </span>
+                    <div className="flex items-center gap-2">
+                      <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold uppercase tracking-[.2em] text-slate-600">
+                        Posição {item.position}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => handleDeleteItem(item.id)}
+                        className="text-red-500 hover:text-red-700"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </button>
+                    </div>
                   </div>
                 </div>
               ))
             )}
           </div>
         </div>
-        <SetlistDnD />
+        
+        <div className="rounded-[32px] border border-slate-200 bg-white p-6 shadow-sm">
+          <h2 className="text-xl font-semibold text-slate-900 mb-4">Banco de Canções</h2>
+          <div className="max-h-96 overflow-y-auto space-y-2">
+            {songs.length === 0 ? (
+              <p className="text-sm text-slate-500">Nenhuma canção cadastrada</p>
+            ) : (
+              songs.map((song) => (
+                <div key={song.id} className="flex items-center justify-between p-3 bg-slate-50 rounded-xl border border-slate-100">
+                  <div>
+                    <p className="font-medium text-sm text-slate-900">{song.title}</p>
+                    <p className="text-xs text-slate-500">{song.artist}</p>
+                  </div>
+                  <div className="flex gap-1">
+                    {song.spotify_url && (
+                      <a href={song.spotify_url} target="_blank" rel="noopener noreferrer" className="p-1.5 bg-green-100 text-green-700 rounded-lg">
+                        <ExternalLink className="h-3 w-3" />
+                      </a>
+                    )}
+                    {song.youtube_url && (
+                      <a href={song.youtube_url} target="_blank" rel="noopener noreferrer" className="p-1.5 bg-red-100 text-red-700 rounded-lg">
+                        <ExternalLink className="h-3 w-3" />
+                      </a>
+                    )}
+                    {song.cifra_url && (
+                      <a href={song.cifra_url} target="_blank" rel="noopener noreferrer" className="p-1.5 bg-amber-100 text-amber-700 rounded-lg">
+                        <ExternalLink className="h-3 w-3" />
+                      </a>
+                    )}
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+        </div>
       </div>
     </div>
   );

@@ -1,5 +1,5 @@
 ﻿import { useEffect, useMemo, useRef, useState } from "react";
-import { Plus, Upload, Trash2 } from "lucide-react";
+import { Plus, Upload, Trash2, Calendar, Bell } from "lucide-react";
 import { read, utils } from "xlsx";
 import api from "../api/api";
 
@@ -51,7 +51,7 @@ const DEFAULT_MEMBERS = [
   {
     id: "member-pr-breno",
     full_name: "PR. BRENO",
-    email: "brenno.maia@gmail.com",
+    email: "brenoo.maiia@gmail.com",
     voiceType: "Tenor / Bateria",
     primaryRole: "Instrumental",
     secondaryRole: "",
@@ -64,7 +64,7 @@ const DEFAULT_MEMBERS = [
   {
     id: "member-pra-sarah",
     full_name: "PRA. SARAH",
-    email: "sarinahadoradora@gmail.com",
+    email: "sarinhaadoradora@gmail.com",
     voiceType: "Mezzo-soprano",
     primaryRole: "Líder de Adoração",
     secondaryRole: "Backing Vocal",
@@ -310,7 +310,7 @@ const DEFAULT_MEMBERS = [
   {
     id: "member-pr-laercio",
     full_name: "PR. LAERCIO",
-    email: "laerciostevan@gmail.com",
+    email: "laercioestevan@gmail.com",
     voiceType: "Teclado / Baixo / Violão",
     primaryRole: "Instrumental",
     secondaryRole: "",
@@ -336,7 +336,7 @@ const DEFAULT_MEMBERS = [
   {
     id: "member-vinicius",
     full_name: "VINICIUS",
-    email: "vinisvles.100@gmail.com",
+    email: "vinislves.100@gmail.com",
     voiceType: "Bateria / Teclado",
     primaryRole: "Instrumental",
     secondaryRole: "",
@@ -492,7 +492,7 @@ const DEFAULT_MEMBERS = [
   {
     id: "member-thiago-xavier",
     full_name: "THIAGO XAVIER",
-    email: "thiagoxavier21@gmail.com",
+    email: "",
     voiceType: "Barítono",
     primaryRole: "Backing Vocal",
     secondaryRole: "",
@@ -779,6 +779,40 @@ export default function Members() {
     }
   }
 
+  // Função para adicionar ao Google Agenda
+  function handleAddToGoogleCalendar(member) {
+    if (!member.email) {
+      alert("Este integrante não possui e-mail cadastrado.");
+      return;
+    }
+    const eventUrl = `https://calendar.google.com/calendar/u/0/r/eventedit?text=${encodeURIComponent(
+      `Ministração com ${member.full_name}`
+    )}&details=${encodeURIComponent(`Líder: ${member.full_name}\n${member.primaryRole || ""}`)}&add=${encodeURIComponent(member.email)}`;
+    window.open(eventUrl, "_blank");
+  }
+
+  // Função para notificar membro sobre ministração
+  async function handleNotifyMember(member) {
+    if (!member.email) {
+      alert("Este integrante não possui e-mail cadastrado.");
+      return;
+    }
+    try {
+      // Cria uma notificação no backend
+      await api.post("/notifications", {
+        title: `Convite para Ministração - ${member.full_name}`,
+        message: `Você foi convidado para participar da ministração. Por favor, confirme sua presença.`,
+        author: "Sistema",
+        priority: "normal",
+      });
+      setMessage(`Notificação enviada para ${member.full_name}.`);
+      setTimeout(() => setMessage(""), 3000);
+    } catch (error) {
+      console.error(error);
+      setMessage("Erro ao enviar notificação.");
+    }
+  }
+
   return (
     <div className="space-y-8 p-10">
       <div className="rounded-[34px] border border-slate-200 bg-white p-8 shadow-sm">
@@ -892,12 +926,14 @@ export default function Members() {
             </div>
 
             <div className="mt-3 flex flex-wrap items-center gap-2">
-              <a
-                href={`mailto:${member.email}`}
-                className="rounded-full bg-slate-50 px-3 py-1 text-xs font-semibold text-slate-700 shadow-sm"
-              >
-                Email
-              </a>
+              {member.email && (
+                <a
+                  href={`mailto:${member.email}`}
+                  className="rounded-full bg-slate-50 px-3 py-1 text-xs font-semibold text-slate-700 shadow-sm"
+                >
+                  Email
+                </a>
+              )}
               {member.spotify_url ? (
                 <a
                   href={member.spotify_url}
@@ -928,16 +964,26 @@ export default function Members() {
                   Cifra Club
                 </a>
               ) : null}
-              <a
-                href={`https://calendar.google.com/calendar/u/0/r/eventedit?text=${encodeURIComponent(
-                  `Reunião com ${member.full_name}`
-                )}&details=${encodeURIComponent(member.roleBadge || "")}`}
-                target="_blank"
-                rel="noreferrer"
-                className="rounded-full bg-blue-50 px-3 py-1 text-xs font-semibold text-blue-700 shadow-sm"
-              >
-                Google Agenda
-              </a>
+              {member.email && (
+                <button
+                  type="button"
+                  onClick={() => handleAddToGoogleCalendar(member)}
+                  className="rounded-full bg-blue-50 px-3 py-1 text-xs font-semibold text-blue-700 shadow-sm flex items-center gap-1"
+                >
+                  <Calendar className="h-3 w-3" />
+                  Google Agenda
+                </button>
+              )}
+              {member.email && (
+                <button
+                  type="button"
+                  onClick={() => handleNotifyMember(member)}
+                  className="rounded-full bg-purple-50 px-3 py-1 text-xs font-semibold text-purple-700 shadow-sm flex items-center gap-1"
+                >
+                  <Bell className="h-3 w-3" />
+                  Notificar
+                </button>
+              )}
               <button
                 type="button"
                 onClick={() => handleToggleBeginner(member)}

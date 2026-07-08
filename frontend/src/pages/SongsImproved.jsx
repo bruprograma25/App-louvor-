@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import api from "../api/api";
 import SongCard from "../components/SongCard";
-import { Search, Plus, Music2, Spotify, Youtube, Music } from "lucide-react";
+import { Search, Plus, Music2, Spotify, Youtube, Music, ExternalLink } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 
 export default function SongsImproved() {

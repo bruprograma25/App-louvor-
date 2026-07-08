@@ -1,4 +1,4 @@
-import { Youtube, Music2, Play, BookOpen, Trash2 } from "lucide-react";
+import { Youtube, Music2, Play, BookOpen, Trash2, ExternalLink, Link } from "lucide-react";
 
 export default function SongCard({ song, onDelete }) {
   const getDirectLink = (type, savedUrl) => {

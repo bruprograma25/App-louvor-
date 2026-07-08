@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Calendar, Users, MapPin, ExternalLink, Filter, Music, Baby, Church as ChurchIcon, PlusCircle, Youtube, Play, Trash2, UserPlus, CheckCircle2, FileDown, AlertTriangle } from "lucide-react";
+import { Calendar, Users, MapPin, ExternalLink, Filter, Music, Baby, Church as ChurchIcon, PlusCircle, Youtube, Play, Trash2, UserPlus, CheckCircle2, FileDown, AlertTriangle, Cross } from "lucide-react";
 import api from "../api/api";
 import { useAuth } from "../context/AuthContext";
 
@@ -8,6 +8,31 @@ const CATEGORIES = [
   { id: 'kids', label: 'Ministério Kids', icon: <Baby className="w-4 h-4" /> },
   { id: 'auxiliares', label: 'Cultos Auxiliares', icon: <PlusCircle className="w-4 h-4" /> }
 ];
+
+// Instrumentos separados por tipo
+const INSTRUMENTS = [
+  { id: "keyboard", label: "Teclado", color: "bg-yellow-500" },
+  { id: "guitar", label: "Guitarra", color: "bg-green-500" },
+  { id: "bass", label: "Baixo", color: "bg-orange-500" },
+  { id: "drums", label: "Bateria", color: "bg-gray-500" },
+  { id: "violin", label: "Violão", color: "bg-emerald-500" },
+  { id: "piano", label: "Piano", color: "bg-indigo-500" },
+];
+
+// Backs separados por voz
+const BACK_VOICES = [
+  { id: "back1", label: "Back 1 (Soprano)", color: "bg-purple-500" },
+  { id: "back2", label: "Back 2 (Contralto)", color: "bg-blue-500" },
+  { id: "back3", label: "Back 3 (Tenor)", color: "bg-pink-500" },
+];
+
+// Líder/Ministro
+const LEADER_ROLES = [
+  { id: "leader", label: "Líder/Ministro", color: "bg-red-500" },
+];
+
+// Todos os papéis combinados
+const ALL_ROLES = [...LEADER_ROLES, ...BACK_VOICES, ...INSTRUMENTS];
 
 // Dados da escala fornecida mapeados para o formato do App
 const SCALE_DATA = [
@@ -350,7 +375,7 @@ export default function Ministrations() {
     if (!name) return;
     const email = window.prompt("Email do iniciante (opcional):");
     try {
-      const res = await api.post("/users", { full_name: name, email: email || `${name.replace(/\s+/g,"").toLowerCase()}@example.com`, password: "iniciante123", status: "Iniciando" });
+      const res = await api.post("/users", { full_name: name, email: email || `${name.replace(/\s+/g,"").toLowerCase()}@example.com`, password: "iniciante123", status: "Iniciante" });
       setUsers((current) => [res.data, ...current]);
       setMessage("Iniciante adicionado.");
     } catch (error) {
@@ -504,11 +529,63 @@ export default function Ministrations() {
             />
           </div>
           
-          {/* Seção de Montagem de Equipe */}
+          {/* Seção de Montagem de Equipe - Separada por tipo */}
           <div className="lg:col-span-2 space-y-4 bg-slate-50 p-6 rounded-[32px] border border-slate-100">
             <h3 className="text-sm font-bold text-slate-700 flex items-center gap-2">
               <Users className="w-4 h-4" /> Montar Equipe da Ministração
             </h3>
+            
+            {/* Líder/Ministro */}
+            <div className="mb-4">
+              <h4 className="text-xs font-bold text-slate-700 mb-2 flex items-center gap-2">
+                <Cross className="h-4 w-4 text-red-500" />
+                Líder/Ministro
+              </h4>
+              <div className="grid gap-2 md:grid-cols-4">
+                {LEADER_ROLES.map((role) => (
+                  <button
+                    key={role.id}
+                    onClick={() => setTempRole(role.id)}
+                    className={`rounded-full ${role.color} px-3 py-2 text-xs font-semibold text-white transition hover:opacity-90`}
+                  >
+                    + {role.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+            
+            {/* Backing Vocal - Separado por voz */}
+            <div className="mb-4">
+              <h4 className="text-xs font-bold text-slate-700 mb-2">Backing Vocal (por voz)</h4>
+              <div className="grid gap-2 md:grid-cols-4">
+                {BACK_VOICES.map((role) => (
+                  <button
+                    key={role.id}
+                    onClick={() => setTempRole(role.id)}
+                    className={`rounded-full ${role.color} px-3 py-2 text-xs font-semibold text-white transition hover:opacity-90`}
+                  >
+                    + {role.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+            
+            {/* Instrumentos */}
+            <div className="mb-4">
+              <h4 className="text-xs font-bold text-slate-700 mb-2">Instrumentos</h4>
+              <div className="grid gap-2 md:grid-cols-4">
+                {INSTRUMENTS.map((role) => (
+                  <button
+                    key={role.id}
+                    onClick={() => setTempRole(role.id)}
+                    className={`rounded-full ${role.color} px-3 py-2 text-xs font-semibold text-white transition hover:opacity-90`}
+                  >
+                    + {role.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+            
             <div className="grid gap-3 sm:grid-cols-3">
               <select 
                 value={tempMember}
@@ -523,6 +600,7 @@ export default function Ministrations() {
                 onChange={(e) => setTempRole(e.target.value)}
                 placeholder="Função (ex: Líder, Baixo...)"
                 className="rounded-2xl border border-slate-200 bg-white px-4 py-2 text-sm outline-none focus:border-rose-500"
+                readOnly
               />
               <button 
                 onClick={handleAddMemberToNewTeam}
@@ -550,7 +628,7 @@ export default function Ministrations() {
             )}
           </div>
 
-          {/* Seção de Músicas da Ministração */}
+          {/* Seção de Músicas da Ministração - Conectada ao Banco */}
           <div className="lg:col-span-2 space-y-4 bg-slate-50 p-6 rounded-[32px] border border-slate-100">
             <h3 className="text-sm font-bold text-slate-700 flex items-center gap-2">
               <Music className="w-4 h-4" /> Repertório da Ministração
@@ -645,28 +723,54 @@ export default function Ministrations() {
             </div>
             <p className="mt-4 text-sm leading-6 text-slate-600">{ministration.notes || "Sem notas adicionais."}</p>
             
-            {/* Lista da Equipe Escalada */}
+            {/* Lista da Equipe Escalada - Separada por tipo */}
             {ministration.team && (
               <div className="mt-6 space-y-3">
                 <h4 className="text-sm font-bold text-slate-900 flex items-center gap-2">
                   <Users className="w-4 h-4 text-rose-500" /> Time Escalado
                 </h4>
-                <div className="grid gap-2">
-                  {ministration.team.map((member, idx) => {
-                    const isConfirmed = (ministration.confirmations || []).some(
-                      (c) => c.email?.toLowerCase() === member.email?.toLowerCase()
-                    );
-                    return (
-                      <div key={idx} className="flex items-center justify-between text-[11px] p-2 bg-slate-50 rounded-xl border border-slate-100">
-                        <div className="flex items-center gap-2">
-                          <span className="font-bold text-slate-700 uppercase">{member.role}</span>
-                          {isConfirmed && <CheckCircle2 className="w-3 h-3 text-emerald-500" title="Presença Confirmada" />}
-                        </div>
-                        <span className="text-slate-500">{member.name}</span>
-                      </div>
-                    );
-                  })}
-                </div>
+                
+                {/* Líder */}
+                {ministration.team.filter(t => t.role === "leader" || t.role === "Líder" || t.role === "Líder/Ministro").length > 0 && (
+                  <div>
+                    <span className="text-[10px] font-bold text-red-600">LÍDER:</span>
+                    <div className="flex flex-wrap gap-1 mt-1">
+                      {ministration.team.filter(t => t.role === "leader" || t.role === "Líder" || t.role === "Líder/Ministro").map((member, idx) => (
+                        <span key={idx} className="text-xs bg-red-50 rounded-full px-2 py-1 border border-red-200">
+                          {member.name}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                
+                {/* Backing Vocal */}
+                {ministration.team.filter(t => t.role?.includes("Back") || t.role?.includes("back")).length > 0 && (
+                  <div>
+                    <span className="text-[10px] font-bold text-purple-600">BACKING VOCAL:</span>
+                    <div className="flex flex-wrap gap-1 mt-1">
+                      {ministration.team.filter(t => t.role?.includes("Back") || t.role?.includes("back")).map((member, idx) => (
+                        <span key={idx} className="text-xs bg-purple-50 rounded-full px-2 py-1 border border-purple-200">
+                          {member.name}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                
+                {/* Instrumentos */}
+                {ministration.team.filter(t => INSTRUMENTS.some(i => t.role?.includes(i.label) || t.role?.includes(i.id))).length > 0 && (
+                  <div>
+                    <span className="text-[10px] font-bold text-yellow-600">INSTRUMENTOS:</span>
+                    <div className="flex flex-wrap gap-1 mt-1">
+                      {ministration.team.filter(t => INSTRUMENTS.some(i => t.role?.includes(i.label) || t.role?.includes(i.id))).map((member, idx) => (
+                        <span key={idx} className="text-xs bg-yellow-50 rounded-full px-2 py-1 border border-yellow-200">
+                          {member.name}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
                 
                 {/* Adicionar Integrante Manualmente no Card */}
                 <div className="mt-4 flex flex-col gap-2 p-3 bg-white rounded-2xl border border-slate-100 shadow-sm">

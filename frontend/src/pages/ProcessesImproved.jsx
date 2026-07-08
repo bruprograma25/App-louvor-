@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Calendar, Plus, Trash2, X, Edit, MapPin, User, Clock } from "lucide-react";
+import { Calendar, Plus, Trash2, X, Edit, MapPin, User, Clock, FileText } from "lucide-react";
 import api from "../api/api";
 import { useAuth } from "../context/AuthContext";
 
@@ -168,14 +168,17 @@ export default function ProcessesImproved() {
             </div>
 
             <div className="space-y-4">
-              <input
-                value={formData.name}
-                onChange={(e) =>
-                  setFormData({ ...formData, name: e.target.value })
-                }
-                placeholder="Nome do processo"
-                className="w-full rounded-3xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none focus:border-rose-500"
-              />
+              <div className="relative">
+                <FileText className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400" />
+                <input
+                  value={formData.name}
+                  onChange={(e) =>
+                    setFormData({ ...formData, name: e.target.value })
+                  }
+                  placeholder="Nome do evento/processo"
+                  className="w-full rounded-3xl border border-slate-200 bg-white pl-10 pr-4 py-3 text-sm outline-none focus:border-rose-500"
+                />
+              </div>
 
               <textarea
                 value={formData.description}
@@ -190,16 +193,19 @@ export default function ProcessesImproved() {
               <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                 <div>
                   <label className="block text-xs font-semibold text-slate-700 mb-2">
-                    Data
+                    Data do Evento
                   </label>
-                  <input
-                    value={formData.process_date}
-                    onChange={(e) =>
-                      setFormData({ ...formData, process_date: e.target.value })
-                    }
-                    type="date"
-                    className="w-full rounded-3xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none focus:border-rose-500"
-                  />
+                  <div className="relative">
+                    <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400" />
+                    <input
+                      value={formData.process_date}
+                      onChange={(e) =>
+                        setFormData({ ...formData, process_date: e.target.value })
+                      }
+                      type="date"
+                      className="w-full rounded-3xl border border-slate-200 bg-white pl-10 pr-4 py-3 text-sm outline-none focus:border-rose-500"
+                    />
+                  </div>
                 </div>
 
                 <div>

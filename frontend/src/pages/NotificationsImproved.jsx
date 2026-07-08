@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Bell, Plus, Trash2, AlertTriangle, Info, CheckCircle, X } from "lucide-react";
+import { Bell, Plus, Trash2, AlertTriangle, Info, CheckCircle, X, Calendar } from "lucide-react";
 import api from "../api/api";
 import { useAuth } from "../context/AuthContext";
 
@@ -172,28 +172,34 @@ export default function NotificationsImproved() {
                   <label className="block text-xs font-semibold text-slate-700 mb-2">
                     Data do Aviso
                   </label>
-                  <input
-                    value={formData.notice_date}
-                    onChange={(e) =>
-                      setFormData({ ...formData, notice_date: e.target.value })
-                    }
-                    type="date"
-                    className="w-full rounded-3xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none focus:border-rose-500"
-                  />
+                  <div className="relative">
+                    <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+                    <input
+                      value={formData.notice_date}
+                      onChange={(e) =>
+                        setFormData({ ...formData, notice_date: e.target.value })
+                      }
+                      type="date"
+                      className="w-full rounded-3xl border border-slate-200 bg-white pl-10 pr-4 py-3 text-sm outline-none focus:border-rose-500"
+                    />
+                  </div>
                 </div>
 
                 <div>
                   <label className="block text-xs font-semibold text-slate-700 mb-2">
                     Data de Expiração
                   </label>
-                  <input
-                    value={formData.expire_date}
-                    onChange={(e) =>
-                      setFormData({ ...formData, expire_date: e.target.value })
-                    }
-                    type="date"
-                    className="w-full rounded-3xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none focus:border-rose-500"
-                  />
+                  <div className="relative">
+                    <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+                    <input
+                      value={formData.expire_date}
+                      onChange={(e) =>
+                        setFormData({ ...formData, expire_date: e.target.value })
+                      }
+                      type="date"
+                      className="w-full rounded-3xl border border-slate-200 bg-white pl-10 pr-4 py-3 text-sm outline-none focus:border-rose-500"
+                    />
+                  </div>
                 </div>
               </div>
 
@@ -281,7 +287,8 @@ export default function NotificationsImproved() {
 
                         <div className="mt-4 flex flex-wrap gap-3 text-xs text-slate-500">
                           {notif.notice_date && (
-                            <div>
+                            <div className="flex items-center gap-1">
+                              <Calendar className="h-3 w-3" />
                               <span className="font-semibold">Data:</span>{" "}
                               {new Date(notif.notice_date).toLocaleDateString(
                                 "pt-BR"

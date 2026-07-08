@@ -2,6 +2,7 @@
 import { Link, useNavigate } from "react-router-dom";
 import api from "../api/api";
 import loginImage from "../assets/login-image.png";
+import { LogIn } from "lucide-react";
 
 export default function Register() {
   const [fullName, setFullName] = useState("");
@@ -74,9 +75,9 @@ export default function Register() {
           <button
             type="button"
             onClick={() => window.location.href = "/api/auth/google"}
-            className="flex w-full items-center justify-center gap-3 rounded-full border border-slate-200 bg-white px-5 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+            className="flex w-full items-center justify-center gap-3 rounded-full border-2 border-blue-500 bg-blue-50 px-5 py-3 text-sm font-semibold text-blue-700 transition hover:bg-blue-100 shadow-md"
           >
-            <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/layout/google.svg" alt="Google" className="h-5 w-5" />
+            <LogIn className="h-5 w-5" />
             Cadastrar com Google
           </button>
         </div>

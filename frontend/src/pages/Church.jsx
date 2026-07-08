@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
-import { MapPin, Clock3, Instagram, Youtube, ExternalLink } from "lucide-react";
+import { MapPin, Clock3, Instagram, Youtube, ExternalLink, Cross } from "lucide-react";
+import logo from "../assets/logo.png";
 
 export default function Church() {
   const [address, setAddress] = useState("");
@@ -27,8 +28,16 @@ export default function Church() {
   return (
     <div className="p-10">
       <div className="rounded-[32px] border border-slate-200 bg-white p-8 shadow-sm">
-        <h1 className="text-3xl font-semibold text-slate-900">Igreja Apostólica Altar</h1>
-        <p className="mt-2 text-sm text-slate-500">Dados da igreja, cultos e redes sociais.</p>
+        <div className="flex items-center gap-4 mb-6">
+          <div className="relative">
+            <img src={logo} alt="Logo da Igreja" className="h-20 w-auto object-contain" />
+            <Cross className="absolute -top-2 -right-2 h-6 w-6 text-rose-600" />
+          </div>
+          <div>
+            <h1 className="text-3xl font-semibold text-slate-900">Igreja Apostólica Altar</h1>
+            <p className="mt-2 text-sm text-slate-500">Dados da igreja, cultos e redes sociais.</p>
+          </div>
+        </div>
 
         <div className="mt-8 grid gap-5 md:grid-cols-2">
           <div className="rounded-[28px] border border-slate-200 bg-slate-50 p-6">

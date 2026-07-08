@@ -1,18 +1,32 @@
 import { useEffect, useState } from "react";
-import { Calendar, Users, MapPin, Music, Trash2, Plus, X, Save } from "lucide-react";
+import { Calendar, Users, MapPin, Music, Trash2, Plus, X, Save, Cross } from "lucide-react";
 import api from "../api/api";
 import { useAuth } from "../context/AuthContext";
 
-const ROLES = [
-  { id: "leader", label: "Líder", color: "bg-red-500" },
-  { id: "back1", label: "Back 1", color: "bg-purple-500" },
-  { id: "back2", label: "Back 2", color: "bg-blue-500" },
-  { id: "back3", label: "Back 3", color: "bg-pink-500" },
+// Instrumentos separados por tipo
+const INSTRUMENTS = [
   { id: "keyboard", label: "Teclado", color: "bg-yellow-500" },
   { id: "guitar", label: "Guitarra", color: "bg-green-500" },
   { id: "bass", label: "Baixo", color: "bg-orange-500" },
   { id: "drums", label: "Bateria", color: "bg-gray-500" },
+  { id: "violin", label: "Violão", color: "bg-emerald-500" },
+  { id: "piano", label: "Piano", color: "bg-indigo-500" },
 ];
+
+// Backs separados por voz
+const BACK_VOICES = [
+  { id: "back1", label: "Back 1 (Soprano)", color: "bg-purple-500" },
+  { id: "back2", label: "Back 2 (Contralto)", color: "bg-blue-500" },
+  { id: "back3", label: "Back 3 (Tenor)", color: "bg-pink-500" },
+];
+
+// Líder/Ministro
+const LEADER_ROLES = [
+  { id: "leader", label: "Líder/Ministro", color: "bg-red-500" },
+];
+
+// Todos os papéis combinados
+const ALL_ROLES = [...LEADER_ROLES, ...BACK_VOICES, ...INSTRUMENTS];
 
 export default function MinstrationsImproved() {
   const { user } = useAuth();
@@ -168,6 +182,14 @@ export default function MinstrationsImproved() {
 
   const filteredMembers = members.filter((m) => m.status === "Apto" || m.status === "active");
 
+  // Separar membros por instrumento/voz
+  const getInstrumentMembers = (instrument) => {
+    return filteredMembers.filter(m => 
+      (m.voiceType || "").toLowerCase().includes(instrument.toLowerCase()) ||
+      (m.primaryRole || "").toLowerCase().includes(instrument.toLowerCase())
+    );
+  };
+
   return (
     <div className="space-y-8 p-10">
       <div className="rounded-[32px] border border-slate-200 bg-white p-8 shadow-sm">
@@ -253,7 +275,7 @@ export default function MinstrationsImproved() {
                 }
                 placeholder="Observações"
                 className="rounded-3xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none focus:border-rose-500 md:col-span-2"
-                rows="3"
+                rows={3}
               />
             </div>
 
@@ -284,12 +306,63 @@ export default function MinstrationsImproved() {
               </div>
             </div>
 
-            {/* Seleção de Equipe */}
+            {/* Seleção de Equipe - Separada por tipo */}
             <div className="mt-8">
               <h3 className="mb-4 font-semibold text-slate-900 flex items-center gap-2">
                 <Users className="h-5 w-5 text-rose-600" />
                 Equipe
               </h3>
+
+              {/* Líder/Ministro */}
+              <div className="mb-6">
+                <h4 className="text-sm font-bold text-slate-700 mb-2 flex items-center gap-2">
+                  <Cross className="h-4 w-4 text-red-500" />
+                  Líder/Ministro
+                </h4>
+                <div className="grid gap-2 md:grid-cols-4">
+                  {LEADER_ROLES.map((role) => (
+                    <button
+                      key={role.id}
+                      onClick={() => addTeamMember(role.id)}
+                      className={`rounded-full ${role.color} px-3 py-2 text-xs font-semibold text-white transition hover:opacity-90`}
+                    >
+                      + {role.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Backing Vocal - Separado por voz */}
+              <div className="mb-6">
+                <h4 className="text-sm font-bold text-slate-700 mb-2">Backing Vocal (por voz)</h4>
+                <div className="grid gap-2 md:grid-cols-4">
+                  {BACK_VOICES.map((role) => (
+                    <button
+                      key={role.id}
+                      onClick={() => addTeamMember(role.id)}
+                      className={`rounded-full ${role.color} px-3 py-2 text-xs font-semibold text-white transition hover:opacity-90`}
+                    >
+                      + {role.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Instrumentos */}
+              <div className="mb-6">
+                <h4 className="text-sm font-bold text-slate-700 mb-2">Instrumentos</h4>
+                <div className="grid gap-2 md:grid-cols-4">
+                  {INSTRUMENTS.map((role) => (
+                    <button
+                      key={role.id}
+                      onClick={() => addTeamMember(role.id)}
+                      className={`rounded-full ${role.color} px-3 py-2 text-xs font-semibold text-white transition hover:opacity-90`}
+                    >
+                      + {role.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
 
               {/* Mostrar membros já adicionados */}
               <div className="mb-6 space-y-3">
@@ -300,14 +373,14 @@ export default function MinstrationsImproved() {
                   >
                     <div
                       className={`h-10 w-10 rounded-full ${
-                        ROLES.find((r) => r.id === member.role)?.color || "bg-gray-400"
+                        ALL_ROLES.find((r) => r.id === member.role)?.color || "bg-gray-400"
                       } flex items-center justify-center text-white text-xs font-semibold`}
                     >
-                      {ROLES.find((r) => r.id === member.role)?.label.charAt(0)}
+                      {ALL_ROLES.find((r) => r.id === member.role)?.label.charAt(0)}
                     </div>
                     <div className="flex-1">
                       <p className="text-sm font-semibold text-slate-900">
-                        {ROLES.find((r) => r.id === member.role)?.label}
+                        {ALL_ROLES.find((r) => r.id === member.role)?.label}
                       </p>
                       <select
                         value={member.memberId || ""}
@@ -338,19 +411,6 @@ export default function MinstrationsImproved() {
                       <X className="h-4 w-4" />
                     </button>
                   </div>
-                ))}
-              </div>
-
-              {/* Botões para adicionar funções */}
-              <div className="grid gap-2 md:grid-cols-4">
-                {ROLES.map((role) => (
-                  <button
-                    key={role.id}
-                    onClick={() => addTeamMember(role.id)}
-                    className={`rounded-full ${role.color} px-3 py-2 text-xs font-semibold text-white transition hover:opacity-90`}
-                  >
-                    + {role.label}
-                  </button>
                 ))}
               </div>
             </div>
@@ -409,25 +469,52 @@ export default function MinstrationsImproved() {
                     )}
                   </div>
 
-                  {/* Team preview */}
+                  {/* Team preview - Separado por tipo */}
                   {min.team && min.team.length > 0 && (
                     <div className="mb-4">
                       <p className="text-xs font-semibold text-slate-700 mb-2">Equipe:</p>
-                      <div className="flex flex-wrap gap-2">
-                        {min.team.slice(0, 3).map((member, idx) => (
-                          <div
-                            key={idx}
-                            className="text-xs bg-white rounded-full px-3 py-1 border border-slate-200"
-                          >
-                            {member.memberName || member.role}
+                      
+                      {/* Líder */}
+                      {min.team.filter(t => t.role === "leader").length > 0 && (
+                        <div className="mb-2">
+                          <span className="text-[10px] font-bold text-red-600">LÍDER:</span>
+                          <div className="flex flex-wrap gap-1 mt-1">
+                            {min.team.filter(t => t.role === "leader").map((member, idx) => (
+                              <span key={idx} className="text-xs bg-red-50 rounded-full px-2 py-1 border border-red-200">
+                                {member.memberName || member.role}
+                              </span>
+                            ))}
                           </div>
-                        ))}
-                        {min.team.length > 3 && (
-                          <div className="text-xs bg-white rounded-full px-3 py-1 border border-slate-200">
-                            +{min.team.length - 3}
+                        </div>
+                      )}
+                      
+                      {/* Backing Vocal */}
+                      {min.team.filter(t => t.role?.startsWith("back")).length > 0 && (
+                        <div className="mb-2">
+                          <span className="text-[10px] font-bold text-purple-600">BACKING VOCAL:</span>
+                          <div className="flex flex-wrap gap-1 mt-1">
+                            {min.team.filter(t => t.role?.startsWith("back")).map((member, idx) => (
+                              <span key={idx} className="text-xs bg-purple-50 rounded-full px-2 py-1 border border-purple-200">
+                                {member.memberName || member.role}
+                              </span>
+                            ))}
                           </div>
-                        )}
-                      </div>
+                        </div>
+                      )}
+                      
+                      {/* Instrumentos */}
+                      {min.team.filter(t => INSTRUMENTS.some(i => i.id === t.role)).length > 0 && (
+                        <div className="mb-2">
+                          <span className="text-[10px] font-bold text-yellow-600">INSTRUMENTOS:</span>
+                          <div className="flex flex-wrap gap-1 mt-1">
+                            {min.team.filter(t => INSTRUMENTS.some(i => i.id === t.role)).map((member, idx) => (
+                              <span key={idx} className="text-xs bg-yellow-50 rounded-full px-2 py-1 border border-yellow-200">
+                                {member.memberName || member.role}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                      )}
                     </div>
                   )}
 
